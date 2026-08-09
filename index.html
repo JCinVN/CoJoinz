@@ -217,11 +217,51 @@
             font-weight: 700;
             color: var(--accent-glow);
         }
+        #sticky-bar-row1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        /* Second row carries the clocks so the countdown never scrolls out of
+           reach. Only rendered when at least one clock is live, so a no-timer
+           game keeps the original single-line bar height. */
+        #sticky-bar-row2 {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 14px;
+            margin-top: 4px;
+            padding-top: 4px;
+            border-top: 1px solid var(--border);
+        }
+        /* Amber = counting DOWN (the one with a deadline). Grey = counting UP
+           (elapsed). Different icon, size and colour so the two never read as
+           the same number. */
+        #sticky-countdown {
+            font-family: monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 0.5px;
+        }
+        #sticky-countdown.time-critical {
+            color: var(--danger);
+        }
+        #sticky-countdown.timer-paused {
+            opacity: 0.45;
+        }
+        #elapsed-time-display {
+            font-family: monospace;
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
         /* Game Style edge bar — a thin strip fixed to the left edge of the
            viewport for the whole game screen, so the active style is always
            visible no matter how far the page is scrolled. Color is driven by
            body.mode-quick / body.mode-lite; the default (no class) is
-           Standard. Hidden outside of active gameplay. */
+           Full. Hidden outside of active gameplay. */
         #style-edge-bar {
             position: fixed;
             left: 0;
@@ -230,7 +270,7 @@
             width: 4px;
             z-index: 900;
             pointer-events: none;
-            background: linear-gradient(180deg, #8b5cf6, #60a5fa); /* Standard */
+            background: linear-gradient(180deg, #8b5cf6, #60a5fa); /* Full */
             display: none;
         }
         body.game-active #style-edge-bar {
@@ -445,7 +485,7 @@
            Lookup / Challenge, which stay in all three styles.
            Lite: keeps Bonus + T-PAIR on top of Express's keep-list, but still
            hides Team Work Round / Wager Session / Burn.
-           Standard: shows everything. */
+           Full: shows everything. */
         body.mode-quick .quick-hide, body.mode-lite .quick-hide {
             display: none !important;
         }
@@ -1259,6 +1299,79 @@
             color: var(--danger);
             font-weight: 800;
         }
+        /* TAX / NON-TAX switch — sticky selection, same idea as the in-game
+           Bonus operator buttons so it reads as familiar. */
+        .btn-mode-toggle {
+            flex: 1;
+            padding: 8px 0;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(148, 163, 184, 0.08);
+            color: var(--text-muted);
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        #hand-calc-mode-tax.active {
+            background: rgba(239, 68, 68, 0.18);
+            border-color: rgba(239, 68, 68, 0.55);
+            color: #fca5a5;
+        }
+        #hand-calc-mode-nontax.active {
+            background: rgba(59, 130, 246, 0.18);
+            border-color: rgba(59, 130, 246, 0.55);
+            color: #93c5fd;
+        }
+        .btn-count-step {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-color);
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .btn-count-step:active {
+            background: rgba(148, 163, 184, 0.25);
+        }
+        #hand-calc-live-total {
+            font-family: monospace;
+            font-weight: 800;
+            color: var(--danger);
+            font-size: 0.9rem;
+            min-width: 48px;
+            text-align: right;
+        }
+        /* Collapsed player rows keep the whole roster on one screen; the row
+           being edited opens itself. */
+        .settlement-player-block.is-open {
+            border-color: var(--primary);
+        }
+        .settlement-player-name {
+            cursor: pointer;
+        }
+        .settlement-caret {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-left: 6px;
+        }
+        .settlement-adjust-row.bonus-split .hand-points-input-wrap {
+            gap: 2px;
+        }
+        .settlement-adjust-row.bonus-split input[type="number"] {
+            max-width: 56px;
+        }
+        .bonus-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            padding: 0 2px;
+        }
         .btn-quick-tax {
             background-color: rgba(239, 68, 68, 0.12);
             color: #f87171;
@@ -1515,6 +1628,7 @@
                 <input type="number" id="round-extend-custom-input" placeholder="Rounds" min="1" style="flex:1;">
                 <button class="btn" style="width:auto; padding:10px 16px;" onclick="submitRoundExtendCustom()">Add</button>
             </div>
+            <button class="btn btn-secondary btn-clear" onclick="backToRoundLimitModal()">← Back</button>
         </div>
     </div>
     <div id="time-limit-modal" class="modal-overlay" style="display:none;">
@@ -1537,12 +1651,13 @@
                 <button class="btn" style="width:auto; padding:10px 16px;" onclick="submitTimeExtendCustom()">Add</button>
             </div>
             <button class="btn btn-secondary" onclick="extendTimeLimit(null)">No Limit</button>
+            <button class="btn btn-secondary btn-clear" onclick="backToTimeLimitModal()">← Back</button>
         </div>
     </div>
     <button id="help-fab" onclick="showHelp()" title="Help">?</button>
     <header>
         <h1>CoJoinz</h1>
-        <div style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:-6px; letter-spacing:1px;">v20</div>
+        <div style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:-6px; letter-spacing:1px;">v21</div>
     </header>
 
     <div class="container">
@@ -1562,7 +1677,7 @@
                 <div class="game-style-row">
                     <button id="style-btn-quick" class="btn btn-secondary" onclick="selectGameStyle('quick')"><span>⚡️</span> Express</button>
                     <button id="style-btn-lite" class="btn btn-secondary" onclick="selectGameStyle('lite')"><img class="game-style-icon" src="data:image/png;base64,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"> Lite</button>
-                    <button id="style-btn-full" class="btn btn-secondary active" onclick="selectGameStyle('full')"><span>🎯</span> Standard</button>
+                    <button id="style-btn-full" class="btn btn-secondary active" onclick="selectGameStyle('full')"><span>🎯</span> Full</button>
                 </div>
             </div>
 
@@ -1595,7 +1710,10 @@
             </div>
 
             <div class="form-group">
-                <label>Turn Timer (per player, manually started)</label>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="margin-bottom:0;">Turn Timer (per player, manually started)</label>
+                    <span style="font-size:0.75rem; color:var(--primary); cursor:pointer;" onclick="testSound()">🔊 Test Sound</span>
+                </div>
                 <select id="turn-timer-select">
                     <option value="0">NONE</option>
                     <option value="30">30 sec</option>
@@ -1624,19 +1742,19 @@
 
             <div class="form-group">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label style="margin-bottom:0;">Player Roster</label>
-                    <span style="font-size:0.75rem; color:var(--primary); cursor:pointer;" onclick="toggleDefaultNamesEditor()">✎ Manage Player Roster</span>
+                    <label style="margin-bottom:0;">📋 Player Roster</label>
+                    <span style="font-size:0.75rem; color:var(--primary); cursor:pointer;" onclick="toggleDefaultNamesEditor()">✎ Manage</span>
                 </div>
                 <div id="default-names-editor" style="display:none; flex-direction:column; gap:6px; margin-top:8px;"></div>
             </div>
 
             <div class="form-group">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label style="margin-bottom:0;">Letter Cards (scores &amp; letter counts)</label>
-                    <span style="font-size:0.75rem; color:var(--primary); cursor:pointer;" onclick="togglePresetEditor()">⚙️ Manage Presets</span>
+                    <label style="margin-bottom:0;">🔤 Letter Cards (scores &amp; letter counts)</label>
+                    <span style="font-size:0.75rem; color:var(--primary); cursor:pointer;" onclick="togglePresetEditor()">✎ Manage</span>
                 </div>
-                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">This same set of scores drives the in-game quick-tap buttons, Long Word detection, and the Letter Cards category in the Settlement calculator.</div>
                 <div id="preset-editor-container" style="display:none; flex-direction:column; gap:6px; margin-top:8px;">
+                    <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">This same set of scores drives the in-game quick-tap buttons, Long Word detection, and the Letter Cards category in the Settlement calculator.</div>
                     <div style="display:flex; gap:8px;">
                         <input type="number" id="new-preset-input" placeholder="e.g. 25">
                         <button class="btn btn-secondary" style="width:auto; padding:10px 18px;" onclick="addExtraPreset()">Add</button>
@@ -1675,10 +1793,15 @@
         <!-- Game screen -->
         <div id="game-screen">
             <!-- Sticky player name (always visible while scrolling) -->
-            <div id="sticky-name-bar" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                <span id="sticky-name-text">Round 1 · Player</span>
-                <span id="sticky-style-badge"><span>🎯</span> Standard</span>
-                <span id="elapsed-time-display" style="display:none; font-size:0.82rem; font-weight:700; color:var(--accent-glow);">⏳ 00:00</span>
+            <div id="sticky-name-bar">
+                <div id="sticky-bar-row1">
+                    <span id="sticky-name-text">Round 1 · Player</span>
+                    <span id="sticky-style-badge"><span>🎯</span> Full</span>
+                </div>
+                <div id="sticky-bar-row2" style="display:none;">
+                    <span id="sticky-countdown" style="display:none;">⏱ 00:00</span>
+                    <span id="elapsed-time-display" style="display:none;">⏳ 00:00</span>
+                </div>
             </div>
 
             <!-- Game Timer -->
@@ -1885,7 +2008,8 @@
                     <div class="hand-calc-panel">
                         <div class="challenge-target-row">
                             <span>Add for:</span>
-                            <select id="hand-calc-player-select"></select>
+                            <select id="hand-calc-player-select" onchange="onHandCalcPlayerChange()"></select>
+                            <span id="hand-calc-live-total" title="This player's Hand Points so far">−0</span>
                         </div>
                         <div class="challenge-target-row">
                             <span>Type:</span>
@@ -1894,6 +2018,16 @@
                                 <option value="action">Action Tokens</option>
                                 <option value="bonus">Bonus Tokens</option>
                             </select>
+                        </div>
+                        <div id="hand-calc-tax-row" style="display:none; gap:8px; margin-bottom:8px;">
+                            <button id="hand-calc-mode-tax" class="btn-mode-toggle active" onclick="setHandCalcTaxMode('tax')">TAX</button>
+                            <button id="hand-calc-mode-nontax" class="btn-mode-toggle" onclick="setHandCalcTaxMode('nontax')">NON-TAX</button>
+                        </div>
+                        <div id="hand-calc-action-row" style="display:none; align-items:center; justify-content:center; gap:10px; margin-bottom:8px;">
+                            <span id="action-token-unit-label" style="font-size:0.8rem; color:var(--text-muted);">10 pts each ×</span>
+                            <button class="btn-count-step" onclick="bumpActionTokenCount(-1)">−</button>
+                            <input type="number" id="action-token-count" value="0" min="0" oninput="updateActionTokenSubtotal()" style="max-width:80px; text-align:center; font-weight:800;">
+                            <button class="btn-count-step" onclick="bumpActionTokenCount(1)">+</button>
                         </div>
                         <div class="control-grid" id="hand-calc-grid"></div>
                         <div class="staged-row">
@@ -2114,9 +2248,18 @@
         // Final Settlement calculators. Letter Cards reuses the card
         // scores above plus these extras; Action / Bonus Tokens have
         // their own fixed values.
+        /* Retired in v21: Letter Cards in the Settlement calculator now offers
+           only this game's real letter values. Add entries back into
+           handCalcValuesFor() if you ever want extra buttons above them. */
         const factoryDefaultHandExtraValues = [25, 30, 35, 40, 50];
-        const factoryDefaultActionTokenValues = [5, 10, 15, 20];
-        const factoryDefaultBonusTokenValues = [5, 10, 15, 20];
+
+        /* Action Tokens are worth a flat amount each, so the Settlement
+           calculator asks for a COUNT instead of showing a grid of values.
+           Change this one number if the token value ever changes. */
+        const ACTION_TOKEN_UNIT_VALUE = 10;
+
+        /* Bonus Tokens each carry their own face value. */
+        const factoryDefaultBonusTokenValues = [5, 10, 15, 20, 25, 30, 35, 40];
 
         // Names offered in the Setup player dropdowns.
 
@@ -2263,7 +2406,7 @@
 
         // Sets the body class that drives .quick-hide / .bonus-hide CSS —
         // Express hides both, Lite hides only .quick-hide (keeps Bonus +
-        // T-PAIR), Standard hides neither. Also drives the left-edge style
+        // T-PAIR), Full hides neither. Also drives the left-edge style
         // bar + the sticky-bar style badge so the active Game Style stays
         // visible throughout gameplay, not just at Setup.
         function applyModeBodyClass() {
@@ -2277,7 +2420,7 @@
         const GAME_STYLE_ICONS = {
             quick: '<span>⚡️</span> Express',
             lite: '<img src="data:image/png;base64,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" alt=""> Lite',
-            full: '<span>🎯</span> Standard'
+            full: '<span>🎯</span> Full'
         };
 
         function updateStyleBadge() {
@@ -2334,9 +2477,23 @@
         let turnTimerInterval = null;
         let turnTimerActive = false;
 
+        // Both countdowns are driven by an absolute wall-clock deadline rather
+        // than by counting setInterval ticks. Mobile browsers (iOS Safari in
+        // particular) freeze JS timers the moment the screen locks or the app
+        // is backgrounded, so a tick-counting clock simply stops — the old
+        // behaviour where the countdown "never ran" on iPhone. Reading
+        // Date.now() every tick means the clock stays correct no matter how
+        // long the page was frozen, and syncTimersFromClock() below catches up
+        // (and fires a missed alarm) the instant the page becomes visible.
+        let gameDeadlineTs = null;
+        let turnDeadlineTs = null;
+
         let audioCtx = null;
+        let alarmAudioEl = null;
         let alarmBeepInterval = null;
         let alarmLabelTimeout = null;
+        let alarmDismissHandler = null;
+        let wakeLockSentinel = null;
 
         let lastGameplayRoundCount = 0; // number of real rounds played, excluding the settlement bonus round
         let gameStartTimestamp = null;
@@ -2345,6 +2502,12 @@
 
         const STORAGE_KEY = 'crosswayz_save_v1';
         let pendingResumeState = null;
+
+        // Declared up here on purpose: flushGoogleFormQueue() runs in the init
+        // block below, which is above this flag's original home further down
+        // the file. A `let` declared after its first use sits in the temporal
+        // dead zone and throws, which used to abort the rest of init.
+        let googleFlushInProgress = false;
 
         // ---------- Init ----------
         selectPlayerCount(selectedCount);
@@ -2429,10 +2592,8 @@
             renderExtraPresetList();
             startElapsedTimeDisplay();
 
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-            } catch (e) { /* ignore */ }
+            unlockAudio();
+            requestWakeLock();
 
             clearInterval(gameTimerInterval);
             clearInterval(alarmBeepInterval);
@@ -2443,12 +2604,16 @@
             document.getElementById('page-flash-overlay').classList.remove('active');
             document.querySelector('#timer-panel .timer-label').textContent = 'TIME REMAINING';
             document.getElementById('timer-panel').style.display = timeLimitMinutes > 0 ? 'block' : 'none';
+            gameDeadlineTs = null;
+            turnDeadlineTs = null;
             if (timeLimitMinutes > 0 && remainingSeconds > 0 && !isManuallyPaused) {
+                gameDeadlineTs = Date.now() + remainingSeconds * 1000;
                 gameTimerInterval = setInterval(tickTimer, 1000);
             }
             updateTimerDisplay();
             updateTimerPauseUI();
             updateTurnTimerUI();
+            updateStickyClocks();
 
             clearDraft();
 
@@ -2764,11 +2929,9 @@
             turnTimerSeconds = parseInt(document.getElementById('turn-timer-select').value);
 
             // Unlock audio on this user gesture so alarms/ticks/gong can play
-            // later without needing another tap (required by some mobile browsers).
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-            } catch (e) { /* Web Audio not available; sounds will just be silent */ }
+            // later without needing another tap (required by mobile browsers).
+            unlockAudio();
+            requestWakeLock();
 
             startRoundTimer();
             stopTurnTimer();
@@ -2793,8 +2956,13 @@
             updateTimerPauseUI();
 
             document.getElementById('timer-panel').style.display = timeLimitMinutes > 0 ? 'block' : 'none';
-            if (timeLimitMinutes <= 0) return;
+            if (timeLimitMinutes <= 0) {
+                gameDeadlineTs = null;
+                updateStickyClocks();
+                return;
+            }
             remainingSeconds = timeLimitMinutes * 60;
+            gameDeadlineTs = Date.now() + remainingSeconds * 1000;
             updateTimerDisplay();
             gameTimerInterval = setInterval(tickTimer, 1000);
         }
@@ -2823,7 +2991,8 @@
         }
 
         function tickTimer() {
-            remainingSeconds--;
+            if (gameDeadlineTs === null) return;
+            remainingSeconds = Math.max(0, Math.round((gameDeadlineTs - Date.now()) / 1000));
             if (remainingSeconds <= 0) {
                 remainingSeconds = 0;
                 clearInterval(gameTimerInterval);
@@ -2835,11 +3004,44 @@
             updateTimerDisplay();
         }
 
+        // Re-reads both clocks against the wall clock. Called on every
+        // visibilitychange / focus / pageshow, which is what rescues the
+        // countdown after the phone has been locked or the app backgrounded.
+        function syncTimersFromClock() {
+            if (isManuallyPaused) return;
+            if (gameDeadlineTs !== null && timeLimitMinutes > 0) {
+                clearInterval(gameTimerInterval);
+                tickTimer();
+                if (remainingSeconds > 0) gameTimerInterval = setInterval(tickTimer, 1000);
+            }
+            if (turnTimerActive && turnDeadlineTs !== null) {
+                clearInterval(turnTimerInterval);
+                tickTurnTimer(true);
+                if (turnTimerRemaining > 0) turnTimerInterval = setInterval(tickTurnTimer, 1000);
+            }
+            updateElapsedTimeDisplay();
+        }
+
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                resumeAudioContext();
+                syncTimersFromClock();
+                requestWakeLock();
+            }
+        });
+        window.addEventListener('focus', syncTimersFromClock);
+        window.addEventListener('pageshow', syncTimersFromClock);
+
         // Pause/resume both the Game Timer and the Turn Timer together, since
         // pausing "the game" should freeze both clocks at once.
         function pauseTimer() {
             clearInterval(gameTimerInterval);
             clearInterval(turnTimerInterval);
+            // Freeze by dropping the deadlines — whatever is left in
+            // remainingSeconds / turnTimerRemaining becomes the source of
+            // truth until resume rebuilds them.
+            gameDeadlineTs = null;
+            turnDeadlineTs = null;
             stopAlarm();
             document.getElementById('page-flash-overlay').classList.remove('active');
         }
@@ -2847,10 +3049,12 @@
         function resumeTimer() {
             if (timeLimitMinutes > 0 && remainingSeconds > 0 && !isManuallyPaused) {
                 clearInterval(gameTimerInterval);
+                gameDeadlineTs = Date.now() + remainingSeconds * 1000;
                 gameTimerInterval = setInterval(tickTimer, 1000);
             }
             if (turnTimerActive && turnTimerRemaining > 0 && !isManuallyPaused) {
                 clearInterval(turnTimerInterval);
+                turnDeadlineTs = Date.now() + turnTimerRemaining * 1000;
                 turnTimerInterval = setInterval(tickTurnTimer, 1000);
             }
         }
@@ -2863,12 +3067,34 @@
             el.textContent = text;
             el.classList.toggle('time-critical', remainingSeconds <= 30);
 
+            const sticky = document.getElementById('sticky-countdown');
+            if (sticky) {
+                sticky.textContent = '⏱ ' + text;
+                sticky.classList.toggle('time-critical', remainingSeconds <= 30);
+                sticky.classList.toggle('timer-paused', isManuallyPaused);
+            }
+            updateStickyClocks();
+
             const flashOverlay = document.getElementById('page-flash-overlay');
             if (remainingSeconds > 0 && remainingSeconds <= 30) {
                 flashOverlay.classList.add('active');
             } else if (remainingSeconds > 30) {
                 flashOverlay.classList.remove('active');
             }
+        }
+
+        // The clock row only exists when there is something to show, so a game
+        // with no Game Timer keeps the original one-line sticky bar.
+        function updateStickyClocks() {
+            const row = document.getElementById('sticky-bar-row2');
+            const cd = document.getElementById('sticky-countdown');
+            const el = document.getElementById('elapsed-time-display');
+            if (!row || !cd || !el) return;
+            const showCd = timeLimitMinutes > 0;
+            cd.style.display = showCd ? 'inline' : 'none';
+            const showElapsed = el.dataset.on === '1';
+            el.style.display = showElapsed ? 'inline' : 'none';
+            row.style.display = (showCd || showElapsed) ? 'flex' : 'none';
         }
 
         function triggerTimeUp() {
@@ -2881,6 +3107,9 @@
             }, 10000);
             document.getElementById('time-limit-modal').style.display = 'flex';
         }
+
+        // Any tap anywhere silences an active alarm, so the dismiss handler
+        // above needs the label reset too — kept here so both paths agree.
 
         function chooseTimeLimitOption(option) {
             document.getElementById('time-limit-modal').style.display = 'none';
@@ -2902,11 +3131,15 @@
             if (extraMinutes === null) {
                 timeLimitMinutes = 0;
                 remainingSeconds = 0;
+                gameDeadlineTs = null;
+                clearInterval(gameTimerInterval);
                 document.getElementById('timer-panel').style.display = 'none';
+                updateStickyClocks();
                 showToast('Game timer removed — playing on with no limit');
             } else {
                 remainingSeconds = extraMinutes * 60;
                 timeLimitMinutes = Math.ceil(remainingSeconds / 60);
+                gameDeadlineTs = Date.now() + remainingSeconds * 1000;
                 alarmTriggered = false;
                 isManuallyPaused = false;
                 document.getElementById('timer-panel').style.display = 'block';
@@ -2916,6 +3149,13 @@
                 gameTimerInterval = setInterval(tickTimer, 1000);
                 showToast(`Extended by ${extraMinutes} minutes`);
             }
+        }
+
+        function backToTimeLimitModal() {
+            document.getElementById('time-extend-modal').style.display = 'none';
+            document.getElementById('time-extend-custom-row').style.display = 'none';
+            document.getElementById('time-extend-custom-input').value = '';
+            document.getElementById('time-limit-modal').style.display = 'flex';
         }
 
         function showTimeExtendCustom() {
@@ -2953,7 +3193,9 @@
             if (turnTimerSeconds <= 0) return;
             clearInterval(turnTimerInterval);
             turnTimerRemaining = turnTimerSeconds;
+            turnDeadlineTs = Date.now() + turnTimerRemaining * 1000;
             turnTimerActive = true;
+            resumeAudioContext();
             updateTurnTimerDisplay();
             updateTurnTimerUI();
             turnTimerInterval = setInterval(tickTurnTimer, 1000);
@@ -2963,16 +3205,22 @@
             clearInterval(turnTimerInterval);
             turnTimerActive = false;
             turnTimerRemaining = 0;
+            turnDeadlineTs = null;
             updateTurnTimerUI();
         }
 
-        function tickTurnTimer() {
-            turnTimerRemaining--;
+        // silent=true when catching up after the page was frozen: the ticks
+        // that were missed while backgrounded must not all fire at once, but a
+        // gong that came due while away still deserves to sound.
+        function tickTurnTimer(silent) {
+            if (turnDeadlineTs === null) return;
+            const prev = turnTimerRemaining;
+            turnTimerRemaining = Math.max(0, Math.round((turnDeadlineTs - Date.now()) / 1000));
             if (turnTimerRemaining <= 0) {
                 turnTimerRemaining = 0;
                 clearInterval(turnTimerInterval);
-                playGong();
-            } else if (turnTimerRemaining <= 10) {
+                if (prev > 0) playGong();
+            } else if (turnTimerRemaining <= 10 && turnTimerRemaining !== prev && !silent) {
                 playTick();
             }
             updateTurnTimerDisplay();
@@ -2985,7 +3233,110 @@
             el.classList.toggle('tt-critical', turnTimerRemaining <= 10);
         }
 
-        // ---------- Offline sound synthesis (Web Audio API — no network needed) ----------
+        // ================= Offline audio =================
+        // Two independent paths, because neither alone works everywhere:
+        //
+        //  1. HTMLAudioElement playing an inlined WAV. On iOS the Web Audio
+        //     API is treated as "ambient" audio and is silenced outright by
+        //     the physical ring/silent switch, which is why alarms were never
+        //     audible on iPhone. Media-element playback is not silenced the
+        //     same way, so this is the path that actually makes noise on iOS.
+        //  2. Web Audio oscillators, kept as a fallback for anything that
+        //     blocks or fails to decode the element.
+        //
+        // Both are inlined as base64 so nothing needs the network.
+        const ALARM_WAV = 'data:audio/wav;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+        const GONG_WAV = 'data:audio/wav;base64,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';
+
+        let gongAudioEl = null;
+
+        function initAudioElements() {
+            if (!alarmAudioEl) {
+                alarmAudioEl = new Audio(ALARM_WAV);
+                alarmAudioEl.loop = true;
+                alarmAudioEl.preload = 'auto';
+                alarmAudioEl.setAttribute('playsinline', '');
+            }
+            if (!gongAudioEl) {
+                gongAudioEl = new Audio(GONG_WAV);
+                gongAudioEl.preload = 'auto';
+                gongAudioEl.setAttribute('playsinline', '');
+            }
+        }
+
+        // Must run inside a real user gesture. iOS only counts audio as
+        // unlocked once something has actually been *played* on that gesture —
+        // creating the context and calling resume() is not enough, which is
+        // why sound stayed dead for the whole session. Playing silently here
+        // buys the right to make noise later without another tap.
+        function unlockAudio() {
+            initAudioElements();
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state !== 'running') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                gain.gain.value = 0.0001;
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.01);
+            } catch (e) { /* Web Audio unavailable; the element path still works */ }
+            [alarmAudioEl, gongAudioEl].forEach(function (el) {
+                if (!el) return;
+                try {
+                    const prev = el.volume;
+                    el.volume = 0;
+                    const p = el.play();
+                    if (p && p.then) {
+                        p.then(function () {
+                            el.pause(); el.currentTime = 0; el.volume = prev;
+                        }).catch(function () { el.volume = prev; });
+                    } else {
+                        el.pause(); el.currentTime = 0; el.volume = prev;
+                    }
+                } catch (e) { /* ignore */ }
+            });
+        }
+
+        // Returning from the background can leave the context 'suspended' or,
+        // on iOS only, 'interrupted' (after a phone call, Siri, another app
+        // taking audio focus). Both need an explicit resume or everything
+        // afterwards is silent.
+        function resumeAudioContext() {
+            try {
+                if (audioCtx && audioCtx.state !== 'running') audioCtx.resume();
+            } catch (e) { /* ignore */ }
+        }
+
+        // Screen Wake Lock keeps the phone awake mid-game. Beyond the obvious
+        // convenience this also sidesteps the whole class of frozen-timer
+        // problems, since a screen that never sleeps never suspends the page.
+        // Unsupported before iOS 16.4 and on some browsers — always optional.
+        function requestWakeLock() {
+            if (!('wakeLock' in navigator)) return;
+            if (!document.body.classList.contains('game-active')) return;
+            if (document.hidden) return;
+            try {
+                navigator.wakeLock.request('screen').then(function (s) {
+                    wakeLockSentinel = s;
+                    s.addEventListener('release', function () { wakeLockSentinel = null; });
+                }).catch(function () { /* denied — not fatal */ });
+            } catch (e) { /* ignore */ }
+        }
+
+        function releaseWakeLock() {
+            try {
+                if (wakeLockSentinel) { wakeLockSentinel.release(); wakeLockSentinel = null; }
+            } catch (e) { /* ignore */ }
+        }
+
+        // Lets Setup prove sound works right now instead of finding out 45
+        // minutes later that the phone was on silent the whole time.
+        function testSound() {
+            unlockAudio();
+            playGong();
+            showToast('Playing test sound — if silent, check the iPhone side switch');
+        }
+
         function playTone(freq, duration, type, gainVal) {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3008,8 +3359,21 @@
         }
 
         function playGong() {
-            // A warm two-note chime (not a sharp beep) — loud enough to actually
-            // notice, using layered triangle/sine tones instead of a thin sine.
+            initAudioElements();
+            resumeAudioContext();
+            let played = false;
+            try {
+                gongAudioEl.currentTime = 0;
+                const p = gongAudioEl.play();
+                if (p && p.then) p.catch(function () { gongFallback(); });
+                played = true;
+            } catch (e) { /* fall through */ }
+            if (!played) gongFallback();
+        }
+
+        // Oscillator version of the same two-note chime, used if the media
+        // element refuses to play.
+        function gongFallback() {
             playTone(392, 0.9, 'triangle', 0.55);
             playTone(196, 1.6, 'sine', 0.5);
             setTimeout(() => {
@@ -3019,15 +3383,30 @@
         }
 
         function playAlarm() {
+            initAudioElements();
+            resumeAudioContext();
+
+            let elementPlaying = false;
             try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-            } catch (e) {
-                return;
-            }
+                alarmAudioEl.currentTime = 0;
+                const p = alarmAudioEl.play();
+                if (p && p.then) p.catch(function () { startBeepFallback(); });
+                elementPlaying = true;
+            } catch (e) { /* fall through */ }
+            if (!elementPlaying) startBeepFallback();
+
+            // The alarm stops itself after 10s, but any tap kills it instantly —
+            // no hunting for a button while it screams. The countdown itself is
+            // untouched; this only silences the noise and the flashing.
+            armAlarmDismiss();
+            setTimeout(stopAlarm, 10000);
+        }
+
+        function startBeepFallback() {
             let beepCount = 0;
             const totalBeeps = 20; // roughly 10 seconds at 2 beeps/sec
             beep();
+            clearInterval(alarmBeepInterval);
             alarmBeepInterval = setInterval(() => {
                 beepCount++;
                 if (beepCount >= totalBeeps) {
@@ -3042,8 +3421,34 @@
             playTone(880, 0.25, 'square', 0.18);
         }
 
+        function armAlarmDismiss() {
+            disarmAlarmDismiss();
+            alarmDismissHandler = function () { stopAlarm(); };
+            // Capture phase so it fires even when the tap lands on a button
+            // inside the Time's Up modal.
+            document.addEventListener('pointerdown', alarmDismissHandler, true);
+            document.addEventListener('touchstart', alarmDismissHandler, true);
+            document.addEventListener('click', alarmDismissHandler, true);
+        }
+
+        function disarmAlarmDismiss() {
+            if (!alarmDismissHandler) return;
+            document.removeEventListener('pointerdown', alarmDismissHandler, true);
+            document.removeEventListener('touchstart', alarmDismissHandler, true);
+            document.removeEventListener('click', alarmDismissHandler, true);
+            alarmDismissHandler = null;
+        }
+
         function stopAlarm() {
             clearInterval(alarmBeepInterval);
+            clearTimeout(alarmLabelTimeout);
+            disarmAlarmDismiss();
+            try {
+                if (alarmAudioEl) { alarmAudioEl.pause(); alarmAudioEl.currentTime = 0; }
+            } catch (e) { /* ignore */ }
+            document.getElementById('page-flash-overlay').classList.remove('active');
+            const label = document.querySelector('#timer-panel .timer-label');
+            if (label && label.textContent.indexOf('UP') !== -1) label.textContent = 'TIME REMAINING';
         }
 
         // Best-effort haptic feedback for tapping number cards. Android Chrome
@@ -3060,7 +3465,8 @@
         function startElapsedTimeDisplay() {
             const el = document.getElementById('elapsed-time-display');
             if (!el) return;
-            el.style.display = 'block';
+            el.dataset.on = '1';
+            updateStickyClocks();
             clearInterval(elapsedTimeInterval);
             elapsedTimeInterval = setInterval(updateElapsedTimeDisplay, 1000);
             updateElapsedTimeDisplay();
@@ -3073,7 +3479,9 @@
         function stopElapsedTimeDisplay() {
             clearInterval(elapsedTimeInterval);
             const el = document.getElementById('elapsed-time-display');
-            if (el) el.style.display = 'none';
+            if (el) el.dataset.on = '0';
+            updateStickyClocks();
+            releaseWakeLock();
         }
 
         // ---------- Round Limit warning (soft reminder only, never force-ends) ----------
@@ -3134,6 +3542,13 @@
             // reminder fire again once the new ceiling comes up.
             roundLimitWarned = false;
             roundLimitReachedPrompted = false;
+        }
+
+        function backToRoundLimitModal() {
+            document.getElementById('round-extend-modal').style.display = 'none';
+            document.getElementById('round-extend-custom-row').style.display = 'none';
+            document.getElementById('round-extend-custom-input').value = '';
+            document.getElementById('round-limit-modal').style.display = 'flex';
         }
 
         function showRoundExtendCustom() {
@@ -4237,9 +4652,12 @@
                 sessionsThisRound.forEach(s => {
                     html += `<tr style="background: rgba(239, 68, 68, 0.06);"><td><span class="wager-icon"></span> #${s.id}</td>`;
                     players.forEach((p, idx) => {
+                        // Winners used to show 0 while everyone else showed a
+                        // dash, which read as two different kinds of "nothing".
+                        // Every cell now shows the actual delta, 0 included.
                         const val = s.deltas[idx];
-                        let cell = val !== undefined ? String(val) : '-';
-                        if (s.confirmed && s.winnerIdx === idx) cell = (val !== undefined ? val : '0') + ' <span class="wager-icon"></span>';
+                        let cell = String(val !== undefined ? val : 0);
+                        if (s.confirmed && s.winnerIdx === idx) cell += ' <span class="wager-icon"></span>';
                         html += `<td>${cell}</td>`;
                     });
                     html += '</tr>';
@@ -4351,23 +4769,49 @@
             // the total is identical, but recording where the points came from
             // is what makes "who keeps sitting on unused Bonus Tokens?"
             // answerable after the fact.
-            adjustContainer.innerHTML = players.map((p, idx) => `
-                <div class="settlement-player-block">
-                    <div class="settlement-player-name">${p.name}
-                        <span class="settlement-player-total" id="settlement-total-${idx}">−0</span>
-                    </div>
-                    ${HAND_CATEGORIES.map(cat => `
+            // Each block collapses to a one-line name + running total. The
+            // player currently selected in the calculator is the one left
+            // open, so the figure you are changing is never scrolled away.
+            const simpleRow = (idx, key, label) => `
                         <div class="settlement-adjust-row">
-                            <span class="settlement-cat-label">${cat.label}</span>
+                            <span class="settlement-cat-label">${label}</span>
                             <div class="hand-points-input-wrap">
                                 <span class="minus-prefix">−</span>
-                                <input type="number" id="settlement-adjust-${idx}-${cat.key}" value="0" min="0" oninput="updateSettlementTotal(${idx})">
-                                <button class="mini-clear-btn" onclick="resetHandPointsInput(${idx}, '${cat.key}')" title="Reset to 0">✕</button>
+                                <input type="number" id="settlement-adjust-${idx}-${key}" value="0" min="0" oninput="updateSettlementTotal(${idx})">
+                                <button class="mini-clear-btn" onclick="resetHandPointsInput(${idx}, '${key}')" title="Reset to 0">✕</button>
                             </div>
-                        </div>`).join('')}
+                        </div>`;
+
+            // TAX and NON-TAX share one row rather than taking a line each —
+            // same information, half the height.
+            const bonusRow = (idx) => `
+                        <div class="settlement-adjust-row bonus-split">
+                            <span class="settlement-cat-label">Bonus Tokens</span>
+                            <div class="hand-points-input-wrap">
+                                <span class="bonus-tag">T</span>
+                                <span class="minus-prefix">−</span>
+                                <input type="number" id="settlement-adjust-${idx}-bonusTax" value="0" min="0" oninput="updateSettlementTotal(${idx})">
+                                <span class="bonus-tag">N</span>
+                                <span class="minus-prefix">−</span>
+                                <input type="number" id="settlement-adjust-${idx}-bonusNonTax" value="0" min="0" oninput="updateSettlementTotal(${idx})">
+                            </div>
+                        </div>`;
+
+            adjustContainer.innerHTML = players.map((p, idx) => `
+                <div class="settlement-player-block" id="settlement-block-${idx}">
+                    <div class="settlement-player-name" onclick="toggleSettlementBlock(${idx})">
+                        <span>${p.name}<span class="settlement-caret" id="settlement-caret-${idx}">▾</span></span>
+                        <span class="settlement-player-total" id="settlement-total-${idx}">−0</span>
+                    </div>
+                    <div id="settlement-body-${idx}" style="display:none;">
+                        ${simpleRow(idx, 'cards', 'Letter Cards')}
+                        ${simpleRow(idx, 'action', 'Action Tokens')}
+                        ${bonusRow(idx)}
+                    </div>
                 </div>`).join('');
 
             renderHandCalc();
+            onHandCalcPlayerChange();
 
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('settlement-screen').style.display = 'flex';
@@ -4375,25 +4819,35 @@
         }
 
         // ---------- Hand Points calculator (Settlement screen) ----------
-        let handCalcSum = 0;
+        let handCalcSum = 0;        // TAX bucket, and the only bucket for non-Bonus categories
+        let handCalcSumNonTax = 0;  // NON-TAX bucket, Bonus Tokens only
+        let handCalcTaxMode = 'tax';
+
+        // Bonus Tokens are stored as two separate figures so the log can
+        // answer "was that a TAX token or not?" after the fact. They still
+        // render as a single row and are always summed together for scoring —
+        // the split is bookkeeping, never a scoring difference.
         const HAND_CATEGORIES = [
             { key: 'cards', label: 'Letter Cards' },
             { key: 'action', label: 'Action Tokens' },
-            { key: 'bonus', label: 'Bonus Tokens' }
+            { key: 'bonusTax', label: 'Bonus Tokens (TAX)' },
+            { key: 'bonusNonTax', label: 'Bonus Tokens (NON-TAX)' }
         ];
 
-        // Letter Cards reuses this game's card scores (plus the extras), since
-        // that's literally what's left in hand. Tokens have their own values.
+        // Letter Cards offers exactly this game's letter values — those are the
+        // only cards that can still be sitting in someone's hand. Bonus Tokens
+        // have their own face values; Action Tokens are a flat rate.
         function handCalcValuesFor(category) {
-            if (category === 'action') return [...factoryDefaultActionTokenValues].sort((a, b) => b - a);
             if (category === 'bonus') return [...factoryDefaultBonusTokenValues].sort((a, b) => b - a);
-            return [...new Set([...gamePresetList, ...factoryDefaultHandExtraValues])].sort((a, b) => b - a);
+            if (category === 'action') return [ACTION_TOKEN_UNIT_VALUE];
+            return [...gamePresetList].sort((a, b) => b - a);
         }
 
         function renderHandCalc() {
             const select = document.getElementById('hand-calc-player-select');
             select.innerHTML = players.map((p, idx) => `<option value="${idx}">${p.name}</option>`).join('');
             document.getElementById('hand-calc-category-select').value = 'cards';
+            handCalcTaxMode = 'tax';
             renderHandCalcGrid();
             players.forEach((p, idx) => updateSettlementTotal(idx));
         }
@@ -4401,15 +4855,81 @@
         function renderHandCalcGrid() {
             const category = document.getElementById('hand-calc-category-select').value;
             const grid = document.getElementById('hand-calc-grid');
+            const taxRow = document.getElementById('hand-calc-tax-row');
+            const actionRow = document.getElementById('hand-calc-action-row');
+
+            clearHandCalc();
+
+            // Action Tokens: every token is worth the same, so asking for a
+            // count beats tapping the same button fifteen times. The count is
+            // free text as well as +/− so a big hand can just be typed.
+            if (category === 'action') {
+                actionRow.style.display = 'flex';
+                taxRow.style.display = 'none';
+                document.getElementById('action-token-unit-label').textContent = ACTION_TOKEN_UNIT_VALUE + ' pts each ×';
+                document.getElementById('action-token-count').value = 0;
+                // A single tappable card for the common case of one or two
+                // tokens. It drives the same counter, so tapping it and typing
+                // a number can never disagree.
+                grid.style.display = 'grid';
+                grid.innerHTML = `<button class="btn-quick-tax" onclick="bumpActionTokenCount(1)">${ACTION_TOKEN_UNIT_VALUE}</button>`;
+                updateActionTokenSubtotal();
+                return;
+            }
+
+            actionRow.style.display = 'none';
+            grid.style.display = 'grid';
+            // Bonus Tokens: the TAX / NON-TAX switch is sticky, so you can tap
+            // several TAX tokens, flip once, tap the rest, and still hand the
+            // whole lot over in a single Add.
+            taxRow.style.display = (category === 'bonus') ? 'flex' : 'none';
+            if (category === 'bonus') setHandCalcTaxMode(handCalcTaxMode, true);
+
             grid.innerHTML = handCalcValuesFor(category)
                 .map(v => `<button class="btn-quick-tax" onclick="tapHandCalc(${v})">${v}</button>`).join('');
-            handCalcSum = 0;
-            document.getElementById('hand-calc-subtotal').textContent = '0';
+        }
+
+        function setHandCalcTaxMode(mode, keepSubtotal) {
+            handCalcTaxMode = mode;
+            ['tax', 'nontax'].forEach(function (m) {
+                const btn = document.getElementById('hand-calc-mode-' + m);
+                if (btn) btn.classList.toggle('active', m === mode);
+            });
+            if (!keepSubtotal) renderHandCalcSubtotal();
+        }
+
+        function updateActionTokenSubtotal() {
+            const count = Math.max(0, parseInt(document.getElementById('action-token-count').value) || 0);
+            handCalcSum = count * ACTION_TOKEN_UNIT_VALUE;
+            handCalcSumNonTax = 0;
+            renderHandCalcSubtotal();
+        }
+
+        function bumpActionTokenCount(delta) {
+            const el = document.getElementById('action-token-count');
+            el.value = Math.max(0, (parseInt(el.value) || 0) + delta);
+            hapticTick();
+            updateActionTokenSubtotal();
+        }
+
+        function renderHandCalcSubtotal() {
+            const category = document.getElementById('hand-calc-category-select').value;
+            const el = document.getElementById('hand-calc-subtotal');
+            if (category === 'bonus') {
+                el.textContent = `T ${handCalcSum} / N ${handCalcSumNonTax}`;
+            } else {
+                el.textContent = String(handCalcSum);
+            }
         }
 
         function updateSettlementTotal(idx) {
             const el = document.getElementById(`settlement-total-${idx}`);
             if (el) el.textContent = '−' + handPointsTotalFor(idx);
+            const live = document.getElementById('hand-calc-live-total');
+            const sel = document.getElementById('hand-calc-player-select');
+            if (live && sel && parseInt(sel.value) === idx) {
+                live.textContent = '−' + handPointsTotalFor(idx);
+            }
         }
 
         function handPointsTotalFor(idx) {
@@ -4419,26 +4939,73 @@
             }, 0);
         }
 
+        // Picking a different player in the calculator opens that player's row
+        // and closes the rest, so the running total is always on screen even
+        // when you settle people out of order.
+        function onHandCalcPlayerChange() {
+            const idx = parseInt(document.getElementById('hand-calc-player-select').value);
+            players.forEach((p, i) => setSettlementBlockOpen(i, i === idx));
+            updateSettlementTotal(idx);
+        }
+
+        function setSettlementBlockOpen(idx, open) {
+            const body = document.getElementById(`settlement-body-${idx}`);
+            const block = document.getElementById(`settlement-block-${idx}`);
+            const caret = document.getElementById(`settlement-caret-${idx}`);
+            if (!body || !block) return;
+            body.style.display = open ? 'block' : 'none';
+            block.classList.toggle('is-open', open);
+            if (caret) caret.textContent = open ? '▴' : '▾';
+        }
+
+        function toggleSettlementBlock(idx) {
+            const body = document.getElementById(`settlement-body-${idx}`);
+            if (!body) return;
+            setSettlementBlockOpen(idx, body.style.display === 'none');
+        }
+
         function tapHandCalc(val) {
             hapticTick();
-            handCalcSum += val;
-            document.getElementById('hand-calc-subtotal').textContent = handCalcSum;
+            const category = document.getElementById('hand-calc-category-select').value;
+            if (category === 'bonus' && handCalcTaxMode === 'nontax') handCalcSumNonTax += val;
+            else handCalcSum += val;
+            renderHandCalcSubtotal();
         }
 
         function applyHandCalc() {
-            if (handCalcSum === 0) return;
+            if (handCalcSum === 0 && handCalcSumNonTax === 0) return;
             const idx = parseInt(document.getElementById('hand-calc-player-select').value);
             const category = document.getElementById('hand-calc-category-select').value;
-            const input = document.getElementById(`settlement-adjust-${idx}-${category}`);
-            input.value = Math.max(0, (parseInt(input.value) || 0) + handCalcSum);
+
+            // Both Bonus buckets are committed by the same single Add — there
+            // is never a need to submit twice.
+            if (category === 'bonus') {
+                addToHandPointsInput(idx, 'bonusTax', handCalcSum);
+                addToHandPointsInput(idx, 'bonusNonTax', handCalcSumNonTax);
+            } else {
+                addToHandPointsInput(idx, category === 'action' ? 'action' : 'cards', handCalcSum);
+            }
+            setSettlementBlockOpen(idx, true);
             updateSettlementTotal(idx);
-            handCalcSum = 0;
-            document.getElementById('hand-calc-subtotal').textContent = '0';
+            clearHandCalc();
+            if (category === 'action') document.getElementById('action-token-count').value = 0;
+        }
+
+        function addToHandPointsInput(idx, key, amount) {
+            if (!amount) return;
+            const input = document.getElementById(`settlement-adjust-${idx}-${key}`);
+            if (!input) return;
+            input.value = Math.max(0, (parseInt(input.value) || 0) + amount);
         }
 
         function clearHandCalc() {
             handCalcSum = 0;
-            document.getElementById('hand-calc-subtotal').textContent = '0';
+            handCalcSumNonTax = 0;
+            const countEl = document.getElementById('action-token-count');
+            if (countEl && document.getElementById('hand-calc-category-select').value === 'action') {
+                countEl.value = 0;
+            }
+            renderHandCalcSubtotal();
         }
 
         function resetHandPointsInput(idx, category) {
@@ -4756,7 +5323,8 @@
                     const input = document.getElementById(`settlement-adjust-${idx}-${cat.key}`);
                     breakdown[cat.key] = Math.abs(parseInt(input && input.value) || 0);
                 });
-                const handPoints = breakdown.cards + breakdown.action + breakdown.bonus;
+                const handPoints = breakdown.cards + breakdown.action
+                    + breakdown.bonusTax + breakdown.bonusNonTax;
                 let adjustVal = -handPoints;
                 if (idx === wentOutIdx) adjustVal += 25;
                 p.turnScore[settlementRoundIndex] = (p.turnScore[settlementRoundIndex] || 0) + adjustVal;
@@ -4780,11 +5348,17 @@
                 t: 'settlement',
                 wentOut: wentOutIdx >= 0 ? wentOutIdx : null,
                 handPoints: players.reduce((acc, p, idx) => {
-                    const b = p.settlementBreakdown || { cards: 0, action: 0, bonus: 0 };
+                    const b = p.settlementBreakdown || { cards: 0, action: 0, bonusTax: 0, bonusNonTax: 0 };
+                    const bt = b.bonusTax || 0;
+                    const bn = b.bonusNonTax || 0;
                     acc[idx] = {
-                        cards: -b.cards,
-                        action: -b.action,
-                        bonus: -b.bonus,
+                        cards: -(b.cards || 0),
+                        action: -(b.action || 0),
+                        // Combined figure kept so older analysis sheets that
+                        // only know about "bonus" still read correctly.
+                        bonus: -(bt + bn),
+                        bonusTax: -bt,
+                        bonusNonTax: -bn,
                         total: -(p.settlementHandPoints || 0)
                     };
                     return acc;
@@ -5172,7 +5746,6 @@
         // Sends whatever is queued, oldest first, stopping at the first
         // failure (network still down) rather than reordering — keeps this
         // device's game log in chronological order in the sheet.
-        let googleFlushInProgress = false;
         async function flushGoogleFormQueue() {
             if (googleFlushInProgress) return;
             if (!navigator.onLine) return;
