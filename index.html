@@ -876,6 +876,9 @@
             font-weight: 800;
             color: var(--gold);
             font-size: 0.72em;
+            margin: 0;
+            padding: 0;
+            letter-spacing: 0;
         }
         .rbr-tpair-badge {
             display: inline-block;
@@ -2159,7 +2162,7 @@
                 <button class="btn" style="margin-top:6px;" onclick="startNewGameFromResults()">New Game</button>
             </div>
             <div class="panel" id="results-tpair-panel" style="display:none;">
-                <div class="panel-title">T-PAIR Stats</div>
+                <div class="panel-title" id="results-tpair-title">T-PAIR Stats</div>
                 <div id="results-tpair-stats"></div>
             </div>
             <div class="panel">
@@ -2304,8 +2307,8 @@
                     </div>
 
                     <div class="help-section">
-                        <h3>♠ T-PAIR Time!</h3>
-                        <p>A distinct purple alert (separate from normal toasts) that reminds the scorekeeper a T-PAIR reward applies. Fires automatically for: a Challenge being decided, a Perfect Turn (manual or auto), a Long Word (auto-detected from the Score → Letter Count mapping in Setup), every Word from the 3rd onward committed in a single Turn (Joinz — 3 Words = 1 credit, 4 Words = 2, 5 Words = 3, and so on), a Word scored ≥15 using a Wild card (Wild 15), and a completed Team Work Round. Each reason shows as "LabelXcount" (e.g. "Joinz4X2"), and the T-PAIR Stats panel on the Final Results screen totals everything up per player at the end of the game.</p>
+                        <h3>♠ T-PAIR Alert</h3>
+                        <p>A distinct purple alert (separate from normal toasts) that reminds the scorekeeper a T-PAIR reward applies. Fires automatically for: a Challenge being decided, a Perfect Turn (manual or auto), a Long Word (auto-detected from the Score → Letter Count mapping in Setup), every Word from the 3rd onward committed in a single Turn (Joinz — 3 Words = 1 credit, 4 Words = 2 more, 5 Words = 3 more, and so on; within one Turn these merge into a single "JoinzN x_count_" entry labelled by whichever Word count the Turn ended on), a Word scored ≥15 using a Wild card (Wild 15), and a completed Team Work Round. Each reason shows as "Label xcount" (e.g. "Joinz4 x2"), always including the count even at 1. The T-PAIR Stats panel on the Final Results screen totals everything up per player at the end of the game, with Joinz broken down by which Word count each Turn ended on (e.g. "Joinz3 x1, Joinz4 x4").</p>
                     </div>
 
                     <div class="help-section">
@@ -2502,22 +2505,28 @@
         // immediately at Confirm).
         //
         // Each entry is { key, label, count } rather than a plain string:
-        //   key   — canonical bucket used for aggregation/stats (e.g. 'Joinz',
-        //           'Wild 15') and for finding an existing entry to merge into.
-        //   label — current display text. Same as key for most reasons, but
-        //           for Joinz it carries the word-count tier ('Joinz3',
-        //           'Joinz4'...) and gets overwritten in place as the tier
-        //           rises, so only the latest tier is ever shown.
+        //   key   — canonical bucket used for aggregation/stats and for
+        //           finding an existing entry to merge into. Most reasons use
+        //           a fixed key ('Wild 15', 'Perfect Turn', ...); Joinz uses
+        //           a tier-specific key per Word count ('Joinz3', 'Joinz4',
+        //           'Joinz5'...) since each tier is its own distinct,
+        //           independently-tracked reason, not one shared bucket.
+        //   label — display text, same as key for every reason including
+        //           Joinz now.
         //   count — how many T-PAIR credits this entry represents. Shown as
-        //           "LabelXcount" (always, even at 1) so the format never
-        //           looks inconsistent turn to turn.
+        //           "Label xcount" (always, even at 1) so the format never
+        //           looks inconsistent turn to turn. Within a single Turn a
+        //           given Joinz tier can only ever be worth 1 (Word count
+        //           only climbs), so its count only exceeds 1 when the SAME
+        //           tier recurs across different Turns in the whole-game
+        //           Final Results summary.
         let turnTPairReasons = [];
         let perfectTurnReasonText = null; // so undoPerfectTurn() can remove its own reason
 
         // Adds one T-PAIR credit under `key`. If `key` already has an entry
         // this Turn, merges into it (count++, label refreshed) instead of
-        // appending a duplicate — this is what turns a 4-Word Joinz into a
-        // single "Joinz4X2" instead of two separate "Joinz3"/"Joinz4" lines.
+        // appending a duplicate — e.g. two separate Wild 15 Words in the same
+        // Turn become one "Wild 15 x2" entry rather than two "Wild 15" lines.
         function addTPairReason(key, label) {
             const existing = turnTPairReasons.find(r => r.key === key);
             if (existing) {
@@ -2539,9 +2548,9 @@
             if (turnTPairReasons[idx].count <= 0) turnTPairReasons.splice(idx, 1);
         }
 
-        // Total badge count (the "n×" in "n× T-PAIR: ...") is the sum of
-        // every entry's count, not the array length — one entry can now be
-        // worth several credits (Joinz4 = 2, Joinz5 = 3, ...).
+        // Total badge count (the "NX" in "NX T-PAIR: ...") is the sum of
+        // every entry's count, not the array length — one entry can be worth
+        // several credits (e.g. Wild 15 x2 from two Words in the same Turn).
         function totalTPairCount(list) {
             return list.reduce((sum, r) => sum + r.count, 0);
         }
@@ -2550,7 +2559,7 @@
         // a smaller gold "Xcount" — always shown, even at count 1, so the
         // format is consistent whether a reason fired once or several times.
         function buildTPairReasonHTML(list) {
-            return list.map(r => `${r.label}<span class="tpair-reason-count">X${r.count}</span>`).join(', ');
+            return list.map(r => `${r.label} <span class="tpair-reason-count">x${r.count}</span>`).join(', ');
         }
 
         // ---- Round limit (soft reminder only, never force-ends the game) ----
@@ -3783,10 +3792,13 @@
                 // Count gets its own highlighted span so it stands out a little
                 // from the reason list without being flashy — reasonText here
                 // is always built from our own fixed T-PAIR reason strings, not
-                // user input, so innerHTML is safe.
-                span.innerHTML = `♠ T-PAIR Time! <span class="tpair-count">${count}×</span> T-PAIR: ${reasonText}`;
+                // user input, so innerHTML is safe. Capital "X" for this total
+                // (vs the lowercase "x" used for each individual reason's own
+                // count, e.g. "Wild 15 x1") is a deliberate visual distinction —
+                // one glance tells you which number is the overall total.
+                span.innerHTML = `${tpairIconSVG()} <span class="tpair-count">${count}X</span> T-PAIR: ${reasonText}`;
             } else {
-                span.textContent = `♠ T-PAIR Time! ${reasonText}`;
+                span.innerHTML = `${tpairIconSVG()} T-PAIR: ${reasonText}`;
             }
             toast.appendChild(span);
 
@@ -3951,14 +3963,17 @@
                 // just a T-PAIR reward.
                 showSevenCardChooser();
             }
-            // ---- Joinz (formerly "Intersections") ----
+            // ---- Joinz ----
             // Every Word from the 3rd onward is worth its own T-PAIR credit,
-            // not just the 3rd: reaching 3 Words = 1 credit, 4 Words = 2,
-            // 5 Words = 3, and so on. Rather than one array entry per Word
-            // (which would show "Joinz3, Joinz4, Joinz5..." for a 5-Word
-            // Turn), addTPairReason merges them into a single entry whose
-            // label always reflects the current Word count and whose count
-            // accumulates — so a 5-Word Turn displays just "Joinz5X3".
+            // not just the 3rd: reaching 3 Words = 1 credit, 4 Words = 2 more
+            // (running total), 5 Words = 3 more, and so on. Within a single
+            // Turn, all of this merges into ONE entry (shared key 'Joinz')
+            // whose label always reflects the current Word count and whose
+            // count keeps accumulating — so a 4-Word Turn shows just
+            // "Joinz4 x2", not four separate lines. Cross-Turn, whole-game
+            // breakdown by tier (e.g. "Joinz3 x1, Joinz4 x4" in Final
+            // Results) comes from grouping by each Turn's final LABEL
+            // instead of the shared key — see getPlayerTPairSummary().
             if (gameMode !== 'quick' && draftWords.length >= 3) {
                 addTPairReason('Joinz', `Joinz${draftWords.length}`);
             }
@@ -4382,7 +4397,7 @@
                     const label = useHC
                         ? `${players[winIdx].name} — Challenge Win (${aPlayer.name} used Handicap)`
                         : `${players[winIdx].name} — Challenge Win`;
-                    showTPairAlert(`${label}<span class="tpair-reason-count">X1</span>`, 1);
+                    showTPairAlert(`${label} <span class="tpair-reason-count">x1</span>`, 1);
                 }
             }
 
@@ -4683,6 +4698,37 @@
             nextTurn();
         }
 
+        // Custom T-PAIR icon (two overlapping cards) — replaces the plain ♠
+        // character wherever it's shown alongside the other stat-line emoji
+        // (🎲⏳⭐✍️). Sized in em so it scales with whatever font-size its
+        // context is in — same trick emoji naturally get "for free" — so it
+        // automatically matches neighbouring icons without a separate size
+        // per call site. `size` defaults to 1 (same size as surrounding
+        // text); pass a larger value for standalone spots like a panel title.
+        function tpairIconSVG(size) {
+            const em = size || 1.5;
+            return `<svg viewBox="0 0 512 512" style="width:${em}em;height:${em}em;vertical-align:-0.3em;" aria-hidden="true">
+<defs>
+<linearGradient id="tpairIconPurple" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#B65CFF"/>
+<stop offset="100%" stop-color="#8E3CFF"/>
+</linearGradient>
+<linearGradient id="tpairIconCard" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#35205F"/>
+<stop offset="100%" stop-color="#261743"/>
+</linearGradient>
+</defs>
+<g transform="rotate(-9 220 250)">
+<rect x="145" y="115" width="180" height="270" rx="28" fill="url(#tpairIconCard)" stroke="url(#tpairIconPurple)" stroke-width="8"/>
+<text x="235" y="285" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="150" font-weight="700" fill="#C27BFF">A</text>
+</g>
+<g transform="rotate(8 300 285)">
+<rect x="225" y="145" width="180" height="270" rx="28" fill="url(#tpairIconCard)" stroke="url(#tpairIconPurple)" stroke-width="8"/>
+<text x="315" y="315" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="150" font-weight="700" fill="#C27BFF">B</text>
+</g>
+</svg>`;
+        }
+
         function getRoundTotal(p, r) {
             return (p.turnScore[r] || 0) + (p.challengeAdj[r] || 0) + (p.teamWorkAdj[r] || 0);
         }
@@ -4718,14 +4764,23 @@
 
         // Every T-PAIR credit a player earned across the whole game, broken
         // down by reason key — the source of truth for the Final Results
-        // "T-PAIR Stats" panel. Returns { total, byReason: { key: count } }.
+        // "T-PAIR Stats" panel. Returns { total, byReason: { label: count } }.
+        // Groups by each entry's LABEL rather than its key — for every
+        // reason except Joinz, label always equals key, so this changes
+        // nothing for them. For Joinz specifically, the label is whichever
+        // Word count that Turn ended on ('Joinz3', 'Joinz4'...), so grouping
+        // by label is what lets two different Turns that both ended on 4
+        // Words combine into one "Joinz4 x4" bucket, while a Turn that ended
+        // on 3 Words stays separate as "Joinz3 x1" — a whole-game breakdown
+        // by ending tier, distinct from the single merged-by-key entry each
+        // Turn's own live toast shows.
         function getPlayerTPairSummary(playerIdx) {
             let total = 0;
             const byReason = {};
             function tally(list) {
                 (list || []).forEach(r => {
                     total += r.count;
-                    byReason[r.key] = (byReason[r.key] || 0) + r.count;
+                    byReason[r.label] = (byReason[r.label] || 0) + r.count;
                 });
             }
             gameEventLog.forEach(e => {
@@ -5724,6 +5779,8 @@
         // toast format so the two never look inconsistent with each other).
         function renderTPairStatsPanel() {
             const panel = document.getElementById('results-tpair-panel');
+            const titleEl = document.getElementById('results-tpair-title');
+            if (titleEl) titleEl.innerHTML = `${tpairIconSVG(2.2)} T-PAIR Stats`;
             if (gameMode === 'quick') {
                 panel.style.display = 'none';
                 return;
@@ -5740,7 +5797,7 @@
                 const summary = perPlayer[idx];
                 if (summary.total === 0) return;
                 const chips = Object.keys(summary.byReason).map(key =>
-                    `<span class="tpair-chip">${key}<span class="tpair-reason-count">X${summary.byReason[key]}</span></span>`
+                    `<span class="tpair-chip">${key} <span class="tpair-reason-count">x${summary.byReason[key]}</span></span>`
                 ).join('');
                 html += `<div class="tpair-player-row">
                             <div class="tpair-player-header">
@@ -5806,6 +5863,14 @@
             if (perfectTurnPlayers.length > 0) {
                 const summary = perfectTurnPlayers.map(p => p.perfectTurnCount > 1 ? `${p.name} (${p.perfectTurnCount})` : p.name).join(', ');
                 html += `<div>✨ Perfect Turn: <strong>${summary}</strong></div>`;
+            }
+            if (gameMode !== 'quick') {
+                const tpairTotals = players.map((p, idx) => ({ name: p.name, total: getPlayerTPairSummary(idx).total }));
+                const maxTPair = Math.max(...tpairTotals.map(t => t.total));
+                if (maxTPair > 0) {
+                    const leaders = tpairTotals.filter(t => t.total === maxTPair).map(t => t.name).join(', ');
+                    html += `<div>${tpairIconSVG()} Most T-PAIRs: <strong>${leaders} (${maxTPair})</strong></div>`;
+                }
             }
             return html;
         }
@@ -5875,7 +5940,30 @@
             saveGameHistory(history);
 
             const { highestTurn, highestWord } = getGameHighestTurnAndWord();
-            updateAllTimeRecords(entry.date, highestTurn, highestWord);
+            let highestTPairGame = null;
+            let highestTPairTurn = null;
+            if (gameMode !== 'quick') {
+                const tpairTotals = players.map((p, idx) => ({ name: p.name, value: getPlayerTPairSummary(idx).total }));
+                const maxTPairGame = Math.max(...tpairTotals.map(t => t.value), 0);
+                if (maxTPairGame > 0) {
+                    // Ties keep only the first name found — the All-Time record
+                    // card only has room for one name, same limitation Highest
+                    // Turn/Word already have.
+                    highestTPairGame = { value: maxTPairGame, name: tpairTotals.find(t => t.value === maxTPairGame).name };
+                }
+                // Per-Turn record: the single best Round any one player had,
+                // reusing the same getRoundTPairCount() the R-b-r ♠ badge
+                // uses, so this number always agrees with what's shown there.
+                let bestTurnValue = 0, bestTurnName = null;
+                players.forEach((p, idx) => {
+                    for (let r = 0; r < lastGameplayRoundCount; r++) {
+                        const v = getRoundTPairCount(idx, r);
+                        if (v > bestTurnValue) { bestTurnValue = v; bestTurnName = p.name; }
+                    }
+                });
+                if (bestTurnValue > 0) highestTPairTurn = { value: bestTurnValue, name: bestTurnName };
+            }
+            updateAllTimeRecords(entry.date, highestTurn, highestWord, highestTPairGame, highestTPairTurn);
             queueGoogleFormSubmission(entry, highestTurn, highestWord);
         }
 
@@ -5889,18 +5977,24 @@
                 const raw = localStorage.getItem(ALLTIME_RECORDS_KEY);
                 if (raw) return JSON.parse(raw);
             } catch (e) { /* ignore */ }
-            return { highestTurn: null, highestWord: null }; // each: { value, name, date }
+            return { highestTurn: null, highestWord: null, highestTPairGame: null, highestTPairTurn: null }; // each: { value, name, date }
         }
         function saveAllTimeRecords(records) {
             try { localStorage.setItem(ALLTIME_RECORDS_KEY, JSON.stringify(records)); } catch (e) { /* ignore */ }
         }
-        function updateAllTimeRecords(gameDate, highestTurn, highestWord) {
+        function updateAllTimeRecords(gameDate, highestTurn, highestWord, highestTPairGame, highestTPairTurn) {
             const records = loadAllTimeRecords();
             if (highestTurn && (!records.highestTurn || highestTurn.value > records.highestTurn.value)) {
                 records.highestTurn = { value: highestTurn.value, name: players[highestTurn.playerIdx].name, date: gameDate };
             }
             if (highestWord && (!records.highestWord || highestWord.value > records.highestWord.value)) {
                 records.highestWord = { value: highestWord.value, name: players[highestWord.playerIdx].name, date: gameDate };
+            }
+            if (highestTPairGame && (!records.highestTPairGame || highestTPairGame.value > records.highestTPairGame.value)) {
+                records.highestTPairGame = { value: highestTPairGame.value, name: highestTPairGame.name, date: gameDate };
+            }
+            if (highestTPairTurn && (!records.highestTPairTurn || highestTPairTurn.value > records.highestTPairTurn.value)) {
+                records.highestTPairTurn = { value: highestTPairTurn.value, name: highestTPairTurn.name, date: gameDate };
             }
             saveAllTimeRecords(records);
         }
@@ -6117,7 +6211,7 @@
             const records = loadAllTimeRecords();
 
             let recordsHtml = '';
-            if (records.highestTurn || records.highestWord) {
+            if (records.highestTurn || records.highestWord || records.highestTPairGame || records.highestTPairTurn) {
                 recordsHtml += `<div style="padding:8px 10px; margin-bottom:10px; border-radius:8px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); font-size:0.82rem;">
                     <div style="font-weight:700; color:var(--gold); margin-bottom:4px;">🏅 All-Time Records (this device)</div>`;
                 if (records.highestTurn) {
@@ -6125,6 +6219,12 @@
                 }
                 if (records.highestWord) {
                     recordsHtml += `<div>✍️ Highest Word: <strong>${records.highestWord.value} pts</strong> — ${records.highestWord.name}</div>`;
+                }
+                if (records.highestTPairGame) {
+                    recordsHtml += `<div>${tpairIconSVG()} Most T-PAIRs (1 game): <strong>${records.highestTPairGame.value}</strong> — ${records.highestTPairGame.name}</div>`;
+                }
+                if (records.highestTPairTurn) {
+                    recordsHtml += `<div>${tpairIconSVG()} Most T-PAIRs (1 turn): <strong>${records.highestTPairTurn.value}</strong> — ${records.highestTPairTurn.name}</div>`;
                 }
                 recordsHtml += `</div>`;
             }
