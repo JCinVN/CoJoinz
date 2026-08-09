@@ -847,6 +847,8 @@
             background-color: rgba(251, 191, 36, 0.12);
             color: var(--gold);
             border: 1px solid rgba(251, 191, 36, 0.35);
+            font-size: 0.92rem;
+            padding: 11px 2px;
         }
         .btn-calc.btn-wild:active {
             background-color: var(--gold);
@@ -866,6 +868,76 @@
         .tpair-count {
             font-weight: 800;
             color: var(--gold);
+        }
+        /* Smaller than the reason label it follows — keeps the per-reason
+           "X2" count visually subordinate to the reason name, distinct from
+           the larger front-of-alert total count (.tpair-count above). */
+        .tpair-reason-count {
+            font-weight: 800;
+            color: var(--gold);
+            font-size: 0.72em;
+        }
+        .rbr-tpair-badge {
+            display: inline-block;
+            background: #a855f7;
+            color: #fff;
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 999px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        .toast-amount {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent-glow);
+        }
+        .tpair-game-total {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .tpair-game-total strong {
+            color: var(--gold);
+            font-weight: 800;
+        }
+        .tpair-player-row {
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+            margin-bottom: 10px;
+        }
+        .tpair-player-row:last-child {
+            margin-bottom: 0;
+        }
+        .tpair-player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .tpair-player-name {
+            font-weight: 700;
+        }
+        .tpair-player-count {
+            font-weight: 800;
+            color: #c084fc;
+        }
+        .tpair-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .tpair-chip {
+            background: rgba(168, 85, 247, 0.15);
+            border: 1px solid #a855f7;
+            color: #e9d5ff;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 999px;
+        }
+        .tpair-chip .tpair-reason-count {
+            font-size: 0.85em;
         }
         .round-limit-alert {
             position: fixed;
@@ -1006,14 +1078,26 @@
             text-align: center;
             line-height: 1.3;
         }
-        .btn-special:disabled {
+        /* .sa-active replaces the native `disabled` attribute for the 5
+           double-tap-to-undo special-action buttons (Lookup, Challenge,
+           Burn, Perfect Turn, Bonus). Native `disabled` blocks touch/click
+           events entirely in modern browsers, which silently broke the
+           "double-tap the same button to undo" gesture below — the button
+           LOOKED tappable-again but the browser was discarding every event
+           on it. A CSS-only "looks disabled" class keeps the visual result
+           identical while leaving the button genuinely tappable, so the
+           double-tap listener can still fire. The single-tap "use" handler
+           stays safe either way since every use* function already guards
+           itself with `if (specialActionsState.x) return;`. */
+        .btn-special.sa-active {
             background-color: var(--disabled) !important;
             color: var(--text-muted) !important;
             border-color: transparent !important;
             opacity: 0.4;
             position: relative;
+            cursor: default;
         }
-        .btn-special:disabled::after {
+        .btn-special.sa-active::after {
             content: ' (Double-Tap to Undo)';
             font-size: 0.55rem;
             display: block;
@@ -1025,7 +1109,7 @@
             color: #f87171;
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
-        .btn-lookup:active:not(:disabled) {
+        .btn-lookup:active:not(.sa-active) {
             background-color: var(--danger);
             color: white;
         }
@@ -1034,7 +1118,7 @@
             color: #34d399;
             border: 1px solid rgba(16, 185, 129, 0.3);
         }
-        .challenge-check:active:not(:disabled) {
+        .challenge-check:active:not(.sa-active) {
             background-color: var(--accent-active);
             color: white;
         }
@@ -1043,7 +1127,7 @@
             color: #f87171;
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
-        .challenge-cross:active:not(:disabled) {
+        .challenge-cross:active:not(.sa-active) {
             background-color: var(--danger);
             color: white;
         }
@@ -1102,7 +1186,7 @@
             transition: all 0.1s;
             touch-action: manipulation;
         }
-        .btn-mult:active:not(:disabled) {
+        .btn-mult:active:not(.sa-active) {
             background-color: #d97706;
             color: white;
         }
@@ -1111,7 +1195,7 @@
             color: #f87171;
             border: 1px solid rgba(239, 68, 68, 0.35);
         }
-        .btn-mult.tax:active:not(:disabled) {
+        .btn-mult.tax:active:not(.sa-active) {
             background-color: var(--danger);
             color: white;
         }
@@ -1119,14 +1203,15 @@
             box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
             transform: scale(0.97);
         }
-        .btn-mult:disabled {
+        .btn-mult.sa-active {
             background-color: var(--disabled) !important;
             color: var(--text-muted) !important;
             border-color: transparent !important;
             opacity: 0.4;
             position: relative;
+            cursor: default;
         }
-        .btn-mult:disabled::after {
+        .btn-mult.sa-active::after {
             content: ' (Double-Tap to Undo)';
             font-size: 0.5rem;
             display: block;
@@ -1150,7 +1235,7 @@
             color: var(--accent-glow);
             border: 1px solid rgba(52, 211, 153, 0.4);
         }
-        .btn-perfect-turn:active:not(:disabled) {
+        .btn-perfect-turn:active:not(.sa-active) {
             background-color: var(--accent-active);
             color: white;
         }
@@ -1592,6 +1677,16 @@
             <button class="btn btn-secondary" onclick="chooseSevenCardOption('none')">None</button>
         </div>
     </div>
+    <div id="wild-picker-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-title">Wild Card</div>
+            <div class="modal-sub">How many Letters does it count as?</div>
+            <button class="btn" onclick="chooseWildOption(1)">1 Letter</button>
+            <button class="btn" onclick="chooseWildOption(2)">2 Letters</button>
+            <button class="btn" onclick="chooseWildOption(3)">3 Letters</button>
+            <button class="btn btn-secondary" onclick="closeWildPicker()">Cancel</button>
+        </div>
+    </div>
     <div id="zero-turn-modal" class="modal-overlay" style="display:none;">
         <div class="modal-box">
             <div class="modal-title">Submit an Empty Turn?</div>
@@ -1657,7 +1752,7 @@
     <button id="help-fab" onclick="showHelp()" title="Help">?</button>
     <header>
         <h1>CoJoinz</h1>
-        <div style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:-6px; letter-spacing:1px;">v21</div>
+        <div style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:-6px; letter-spacing:1px;">v22</div>
     </header>
 
     <div class="container">
@@ -1931,6 +2026,12 @@
                     <!-- Preset score buttons (Letters — build up a Word) -->
                     <div class="control-grid" id="preset-grid"></div>
 
+                    <!-- Wild card buttons — kept in their own row, separate from
+                         the score presets above, since "WILD 1/2/3" is longer
+                         text than a plain score number and doesn't fit the
+                         same dense grid cleanly. -->
+                    <div class="control-grid" id="wild-button-row" style="grid-template-columns: repeat(4, 1fr);"></div>
+
                     <!-- Subtotal (not yet applied) — itemized so every tap is visibly confirmed, no vibration needed -->
                     <div class="staged-row">
                         <span>Word Subtotal (tap − or + to apply)</span>
@@ -2057,6 +2158,10 @@
                 <div id="results-stats" class="stats-footer"></div>
                 <button class="btn" style="margin-top:6px;" onclick="startNewGameFromResults()">New Game</button>
             </div>
+            <div class="panel" id="results-tpair-panel" style="display:none;">
+                <div class="panel-title">T-PAIR Stats</div>
+                <div id="results-tpair-stats"></div>
+            </div>
             <div class="panel">
                 <div class="panel-title">
                     <span>Round-by-Round History</span>
@@ -2160,7 +2265,7 @@
 
                     <div class="help-section">
                         <h3>Bonus (2X / 3X / TAX / FLAT)</h3>
-                        <p>After building your Words, pick a Bonus and where it applies: <strong>Letter</strong> (choose a card, self-explanatory value), <strong>Word</strong> (auto-picks your highest word for a multiplier, or lowest word for TAX), or <strong>Turn</strong> (applies to the whole turn total so far). Multipliers add the extra copies; TAX subtracts that amount; <strong>FLAT</strong> just adds a flat amount unrelated to any Letter/Word/Turn value. One Bonus per turn.</p>
+                        <p>After building your Words, pick a Bonus and where it applies: <strong>Card</strong> (choose a card, self-explanatory value), <strong>Word</strong> (auto-picks your highest word for a multiplier, or lowest word for TAX), or <strong>Turn</strong> (applies to the whole turn total so far). Multipliers add the extra copies; TAX subtracts that amount; <strong>FLAT</strong> just adds a flat amount unrelated to any Card/Word/Turn value. One Bonus per turn.</p>
                     </div>
 
                     <div class="help-section">
@@ -2200,7 +2305,7 @@
 
                     <div class="help-section">
                         <h3>♠ T-PAIR Time!</h3>
-                        <p>A distinct purple alert (separate from normal toasts) that reminds the scorekeeper a T-PAIR reward applies. Fires automatically for: a Challenge being decided, a Perfect Turn (manual or auto), a Long Word (auto-detected from the Score → Letter Count mapping in Setup), the 3rd Word committed in a single Turn (Intersections), a Word scored ≥15 using a Wild card (Wild 15), and a completed Team Work Round.</p>
+                        <p>A distinct purple alert (separate from normal toasts) that reminds the scorekeeper a T-PAIR reward applies. Fires automatically for: a Challenge being decided, a Perfect Turn (manual or auto), a Long Word (auto-detected from the Score → Letter Count mapping in Setup), every Word from the 3rd onward committed in a single Turn (Joinz — 3 Words = 1 credit, 4 Words = 2, 5 Words = 3, and so on), a Word scored ≥15 using a Wild card (Wild 15), and a completed Team Work Round. Each reason shows as "LabelXcount" (e.g. "Joinz4X2"), and the T-PAIR Stats panel on the Final Results screen totals everything up per player at the end of the game.</p>
                     </div>
 
                     <div class="help-section">
@@ -2395,8 +2500,58 @@
         // at Submit instead of interrupting mid-turn (Team Work Round is the
         // one exception — it has no separate Submit step, so it still alerts
         // immediately at Confirm).
+        //
+        // Each entry is { key, label, count } rather than a plain string:
+        //   key   — canonical bucket used for aggregation/stats (e.g. 'Joinz',
+        //           'Wild 15') and for finding an existing entry to merge into.
+        //   label — current display text. Same as key for most reasons, but
+        //           for Joinz it carries the word-count tier ('Joinz3',
+        //           'Joinz4'...) and gets overwritten in place as the tier
+        //           rises, so only the latest tier is ever shown.
+        //   count — how many T-PAIR credits this entry represents. Shown as
+        //           "LabelXcount" (always, even at 1) so the format never
+        //           looks inconsistent turn to turn.
         let turnTPairReasons = [];
         let perfectTurnReasonText = null; // so undoPerfectTurn() can remove its own reason
+
+        // Adds one T-PAIR credit under `key`. If `key` already has an entry
+        // this Turn, merges into it (count++, label refreshed) instead of
+        // appending a duplicate — this is what turns a 4-Word Joinz into a
+        // single "Joinz4X2" instead of two separate "Joinz3"/"Joinz4" lines.
+        function addTPairReason(key, label) {
+            const existing = turnTPairReasons.find(r => r.key === key);
+            if (existing) {
+                existing.count++;
+                existing.label = label;
+            } else {
+                turnTPairReasons.push({ key, label, count: 1 });
+            }
+            return existing || turnTPairReasons[turnTPairReasons.length - 1];
+        }
+
+        // Undo counterpart — decrements the matching entry's count, removing
+        // it outright once it hits 0. Used by undoPerfectTurn()/undoChallenge()
+        // rather than a plain splice, since a key can now represent >1 credit.
+        function removeTPairReason(key) {
+            const idx = turnTPairReasons.findIndex(r => r.key === key);
+            if (idx === -1) return;
+            turnTPairReasons[idx].count--;
+            if (turnTPairReasons[idx].count <= 0) turnTPairReasons.splice(idx, 1);
+        }
+
+        // Total badge count (the "n×" in "n× T-PAIR: ...") is the sum of
+        // every entry's count, not the array length — one entry can now be
+        // worth several credits (Joinz4 = 2, Joinz5 = 3, ...).
+        function totalTPairCount(list) {
+            return list.reduce((sum, r) => sum + r.count, 0);
+        }
+
+        // Builds the reason-list HTML for a T-PAIR alert: "Label" followed by
+        // a smaller gold "Xcount" — always shown, even at count 1, so the
+        // format is consistent whether a reason fired once or several times.
+        function buildTPairReasonHTML(list) {
+            return list.map(r => `${r.label}<span class="tpair-reason-count">X${r.count}</span>`).join(', ');
+        }
 
         // ---- Round limit (soft reminder only, never force-ends the game) ----
         // ---- Game Mode: 'full' (everything) or 'quick' (score-only — no
@@ -3565,13 +3720,18 @@
         }
 
         // ---------- Toasts ----------
-        function showToast(message, undoFn, useWagerIcon) {
+        function showToast(message, undoFn, useWagerIcon, useHTML) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
             const span = document.createElement('span');
             if (useWagerIcon) {
                 span.innerHTML = '<span class="wager-icon"></span>&nbsp;' + message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            } else if (useHTML) {
+                // Only for messages built entirely from our own fixed markup
+                // and numbers (never user-entered text) — e.g. the Turn-total
+                // toast, which highlights its two numbers in a styled span.
+                span.innerHTML = message;
             } else {
                 span.textContent = message;
             }
@@ -3647,8 +3807,34 @@
         // ---------- Preset / Subtotal calculator (builds Words from Letters) ----------
         function renderPresetGrid() {
             const grid = document.getElementById('preset-grid');
-            grid.innerHTML = gamePresetList.map(v => `<button class="btn-calc" onclick="tapPreset(${v})">${v}</button>`).join('')
-                + [1, 2, 3].map(n => `<button class="btn-calc btn-wild" onclick="tapWild(${n})" title="Wild card — 0 pts, counts as ${n} letter${n > 1 ? 's' : ''}">W${n}</button>`).join('');
+            grid.innerHTML = gamePresetList.map(v => `<button class="btn-calc" onclick="tapPreset(${v})">${v}</button>`).join('');
+            renderWildButtonRow();
+        }
+
+        // Standalone row, separate from the score presets above — one button
+        // that opens a picker (for when the Letter count needs a moment's
+        // thought), plus three quick-tap buttons for the common case where
+        // the count is already known. The three quick-tap buttons behave
+        // exactly as before (immediate, no picker); only their label grew
+        // from "W1" to "WILD 1" for clarity.
+        function renderWildButtonRow() {
+            const row = document.getElementById('wild-button-row');
+            if (!row) return;
+            row.innerHTML = `<button class="btn-calc btn-wild" onclick="openWildPicker()" title="Wild card — pick how many Letters it counts as">WILD</button>`
+                + [1, 2, 3].map(n => `<button class="btn-calc btn-wild" onclick="tapWild(${n})" title="Wild card — 0 pts, counts as ${n} letter${n > 1 ? 's' : ''}">WILD ${n}</button>`).join('');
+        }
+
+        function openWildPicker() {
+            document.getElementById('wild-picker-modal').style.display = 'flex';
+        }
+
+        function closeWildPicker() {
+            document.getElementById('wild-picker-modal').style.display = 'none';
+        }
+
+        function chooseWildOption(letters) {
+            closeWildPicker();
+            tapWild(letters);
         }
 
         // stagedTapStack holds one entry per card tapped this Word, in order:
@@ -3741,11 +3927,11 @@
             // since one Turn can rack up several triggers. No names needed
             // here — these always belong to the current Turn player (only
             // Challenge can credit someone else, handled separately). Quick
-            // Mode has no T-PAIR mechanism at all, so Wild 15 / Intersections
+            // Mode has no T-PAIR mechanism at all, so Wild 15 / Joinz
             // (which only ever fed T-PAIR, no score effect) are skipped
             // entirely there. ----
             if (gameMode !== 'quick' && usedWild && finalVal >= 15) {
-                turnTPairReasons.push(`Wild 15`);
+                addTPairReason('Wild 15', 'Wild 15');
             }
             // ---- Long Word auto-detection via per-card letter accumulation ----
             // Adds up the letter count of every card tapped for this Word
@@ -3753,7 +3939,7 @@
             // threshold — no button to remember, and it works no matter how
             // many taps built up the Word.
             if (gameMode !== 'quick' && wordLetterCount >= longWordThreshold) {
-                turnTPairReasons.push(`Long Word`);
+                addTPairReason('Long Word', 'Long Word');
             }
             if (cardCount === 7) {
                 // Exactly 7 cards used in one Word is ambiguous by itself — it
@@ -3765,8 +3951,16 @@
                 // just a T-PAIR reward.
                 showSevenCardChooser();
             }
-            if (gameMode !== 'quick' && draftWords.length === 3) {
-                turnTPairReasons.push(`Intersections`);
+            // ---- Joinz (formerly "Intersections") ----
+            // Every Word from the 3rd onward is worth its own T-PAIR credit,
+            // not just the 3rd: reaching 3 Words = 1 credit, 4 Words = 2,
+            // 5 Words = 3, and so on. Rather than one array entry per Word
+            // (which would show "Joinz3, Joinz4, Joinz5..." for a 5-Word
+            // Turn), addTPairReason merges them into a single entry whose
+            // label always reflects the current Word count and whose count
+            // accumulates — so a 5-Word Turn displays just "Joinz5X3".
+            if (gameMode !== 'quick' && draftWords.length >= 3) {
+                addTPairReason('Joinz', `Joinz${draftWords.length}`);
             }
         }
 
@@ -3876,7 +4070,7 @@
             updateSpecialButtonsUI();
             if (gameMode !== 'quick') {
                 perfectTurnReasonText = `Perfect Turn`;
-                turnTPairReasons.push(perfectTurnReasonText);
+                addTPairReason('Perfect Turn', perfectTurnReasonText);
             }
         }
 
@@ -3888,8 +4082,7 @@
             const p = players[activePlayerIndex];
             p.perfectTurnCount = Math.max(0, (p.perfectTurnCount || 0) - 1);
             if (perfectTurnReasonText) {
-                const rIdx = turnTPairReasons.lastIndexOf(perfectTurnReasonText);
-                if (rIdx > -1) turnTPairReasons.splice(rIdx, 1);
+                removeTPairReason('Perfect Turn');
                 perfectTurnReasonText = null;
             }
             perfectTurnEntry = null;
@@ -3940,7 +4133,7 @@
         function renderBonusLayerRow(op) {
             const row = document.getElementById('bonus-layer-row');
             let html = `
-                <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="chooseBonusLayer('letter')">Letter</button>
+                <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="chooseBonusLayer('letter')">Card</button>
                 <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="chooseBonusLayer('word')">Word</button>
                 <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="chooseBonusLayer('turn')">Turn</button>`;
             if (op === 'tax') {
@@ -3954,13 +4147,16 @@
             if (layer === 'letter') {
                 // Auto-pick from every card tapped this Turn (turnLetterLog) —
                 // no more manual tap needed. Wild is never in this log, so it
-                // can never get auto-picked as the "lowest" for TAX.
+                // can never get auto-picked as the "lowest" for TAX. Internal
+                // key/variable names stay "letter" (unrelated to the general
+                // Letter-count concept used elsewhere in the app); only this
+                // Bonus layer's user-facing label is "Card".
                 if (turnLetterLog.length === 0) {
-                    alert('No Letters recorded yet this turn — build one first.');
+                    alert('No Cards recorded yet this turn — build one first.');
                     return;
                 }
                 const target = bonusPendingOp === 'tax' ? Math.min(...turnLetterLog) : Math.max(...turnLetterLog);
-                applyBonus(bonusPendingOp, 'Letter', target);
+                applyBonus(bonusPendingOp, 'Card', target);
                 return;
             }
             if (layer === 'word') {
@@ -3986,10 +4182,11 @@
             }
         }
 
-        // Formula: 2X/3X ADD (multiplier − 1) copies of the target, so the
-        // final total lands on exactly that multiple — 2X on a 30-point Word
-        // adds 30 (total 60), 3X adds 60 (total 90). TAX subtracts the target
-        // value. STACK just adds the already-summed value straight through.
+        // Formula: 2X/3X ADD (multiplier) copies of the target on top of the
+        // original — the original value is never subtracted or replaced, only
+        // added to. A 10-point Turn with 2X adds 20 (total 30); 3X adds 30
+        // (total 40). TAX subtracts the target value. STACK just adds the
+        // already-summed value straight through.
         function applyBonus(op, layerLabel, targetValue) {
             let delta, opLabel;
             if (op === 'tax') {
@@ -3999,7 +4196,7 @@
                 delta = targetValue;
                 opLabel = 'STACK';
             } else {
-                delta = targetValue * (parseInt(op) - 1);
+                delta = targetValue * parseInt(op);
                 opLabel = op.toUpperCase();
             }
             const labelSuffix = layerLabel ? ` ${layerLabel}` : '';
@@ -4148,11 +4345,17 @@
             appliedChallenge = { aIdx, bIdx, winner, round: rIndex, hcUsed: useHC };
             // Logged from the challenger's (B's) point of view: B is the one
             // who chose to challenge, so `result` describes B's outcome.
+            // `tpair` only needs to be set for a Challenger (B) win — when A
+            // wins, that credit is already captured in A's own 'turn' event
+            // via turnTPairReasons below, so flagging it here too would
+            // double-count it during stats aggregation.
+            const challengerWon = (winner === 'B');
             gameEventLog.push({
                 r: rIndex, p: bIdx, t: 'challenge',
                 opponent: aIdx,
-                result: winner === 'B' ? 'win' : 'lose',
-                hcUsed: useHC
+                result: challengerWon ? 'win' : 'lose',
+                hcUsed: useHC,
+                tpair: (gameMode !== 'quick' && challengerWon)
             });
             specialActionsState.challenge = true;
             showToast(useHC
@@ -4164,17 +4367,22 @@
             // name needed — same person as everything else in that list). But
             // a win by B (the Challenger) credits someone OTHER than the
             // current Turn player, so it can't just blend into A's summary —
-            // it gets its own immediate alert naming B instead. Quick Mode has
-            // no T-PAIR mechanism, so this whole block is skipped there — the
-            // plain toast above already covers the +10/-10 outcome.
+            // it gets its own immediate alert naming B instead, AND is
+            // persisted via the `tpair` flag above (previously this branch
+            // only showed a toast and the credit was lost — it's now counted
+            // in both the live per-player T-PAIR stats and the offline
+            // analysis). Quick Mode has no T-PAIR mechanism, so this whole
+            // block is skipped there — the plain toast above already covers
+            // the +10/-10 outcome.
             if (gameMode !== 'quick') {
                 if (winIdx === activePlayerIndex) {
                     appliedChallenge.reasonText = `Challenge Win`;
-                    turnTPairReasons.push(appliedChallenge.reasonText);
+                    addTPairReason('Challenge Win', appliedChallenge.reasonText);
                 } else {
-                    showTPairAlert(useHC
+                    const label = useHC
                         ? `${players[winIdx].name} — Challenge Win (${aPlayer.name} used Handicap)`
-                        : `${players[winIdx].name} — Challenge Win`);
+                        : `${players[winIdx].name} — Challenge Win`;
+                    showTPairAlert(`${label}<span class="tpair-reason-count">X1</span>`, 1);
                 }
             }
 
@@ -4200,8 +4408,7 @@
             recalculateTotals();
 
             if (reasonText) {
-                const idx = turnTPairReasons.lastIndexOf(reasonText);
-                if (idx > -1) turnTPairReasons.splice(idx, 1);
+                removeTPairReason('Challenge Win');
             }
 
             specialActionsState.challenge = false;
@@ -4331,7 +4538,14 @@
         }
 
         function configureSpecialButton(btnElement, isDisabledFn, undoFn) {
-            btnElement.disabled = isDisabledFn();
+            // Deliberately NOT btnElement.disabled = ... — see the .sa-active
+            // comment in the stylesheet for why: native `disabled` blocks the
+            // very touch/click events the double-tap-to-undo gesture below
+            // depends on. The single-tap "use" action stays safe regardless,
+            // since it already self-guards with `if (specialActionsState.x) return;`.
+            const isActive = isDisabledFn();
+            btnElement.classList.toggle('sa-active', isActive);
+            btnElement.setAttribute('aria-disabled', isActive ? 'true' : 'false');
             if (!btnElement.hasDoubleTapListener) {
                 let lastTap = 0;
                 btnElement.addEventListener('touchend', function(e) {
@@ -4457,10 +4671,13 @@
             // Score always gets its own plain toast. T-PAIR reasons (if any)
             // get a separate, visually distinct alert — kept apart so the
             // score/total is never buried inside a cluttered T-PAIR list.
-            showToast(`${sign}${submittedScore} → Total ${totalNow}`);
+            // Both numbers (this Turn's delta and the running Total) are
+            // highlighted the same way — same size, same accent color — so
+            // they read as a pair at a glance without growing the toast's height.
+            showToast(`<span class="toast-amount">${sign}${submittedScore}</span> → <span class="toast-amount">Total ${totalNow}</span>`, null, false, true);
             if (gameMode !== 'quick' && turnTPairReasons.length > 0) {
-                const n = turnTPairReasons.length;
-                showTPairAlert(turnTPairReasons.join(', '), n);
+                const n = totalTPairCount(turnTPairReasons);
+                showTPairAlert(buildTPairReasonHTML(turnTPairReasons), n);
             }
             clearDraft();
             nextTurn();
@@ -4468,6 +4685,66 @@
 
         function getRoundTotal(p, r) {
             return (p.turnScore[r] || 0) + (p.challengeAdj[r] || 0) + (p.teamWorkAdj[r] || 0);
+        }
+
+        // Total T-PAIR credits a given player earned in a given Round, pulled
+        // from every source that can contribute one:
+        //   - their own 'turn' event that Round (Wild 15 / Long Word / Joinz /
+        //     Perfect Turn / a self-won Challenge)
+        //   - a 'challenge' event they won as the Challenger (the other
+        //     player's win folds into their own 'turn' event above instead)
+        //   - a Team Work Round whose share landed in this Round for them
+        //     (matched via teamWorkLog's assignedRounds, same lookup the
+        //     Leader-tag rendering below already uses)
+        // Shared by the R-b-r ♠ badge and the Final Results T-PAIR summary so
+        // the two always agree on the same numbers.
+        function getRoundTPairCount(playerIdx, round) {
+            let total = 0;
+            gameEventLog.forEach(e => {
+                if (e.t === 'turn' && e.p === playerIdx && e.r === round) {
+                    total += totalTPairCount(e.tpairReasons || []);
+                } else if (e.t === 'challenge' && e.tpair && e.r === round) {
+                    const winner = (e.result === 'win') ? e.p : e.opponent;
+                    if (winner === playerIdx) total += 1;
+                }
+            });
+            teamWorkLog.forEach(t => {
+                if (t.assignedRounds && t.assignedRounds[playerIdx] === round) {
+                    total += totalTPairCount(t.tpairReasons || []);
+                }
+            });
+            return total;
+        }
+
+        // Every T-PAIR credit a player earned across the whole game, broken
+        // down by reason key — the source of truth for the Final Results
+        // "T-PAIR Stats" panel. Returns { total, byReason: { key: count } }.
+        function getPlayerTPairSummary(playerIdx) {
+            let total = 0;
+            const byReason = {};
+            function tally(list) {
+                (list || []).forEach(r => {
+                    total += r.count;
+                    byReason[r.key] = (byReason[r.key] || 0) + r.count;
+                });
+            }
+            gameEventLog.forEach(e => {
+                if (e.t === 'turn' && e.p === playerIdx) {
+                    tally(e.tpairReasons);
+                } else if (e.t === 'challenge' && e.tpair) {
+                    const winner = (e.result === 'win') ? e.p : e.opponent;
+                    if (winner === playerIdx) {
+                        total += 1;
+                        byReason['Challenge Win'] = (byReason['Challenge Win'] || 0) + 1;
+                    }
+                }
+            });
+            teamWorkLog.forEach(t => {
+                if (t.assignedRounds && t.assignedRounds[playerIdx] !== undefined) {
+                    tally(t.tpairReasons);
+                }
+            });
+            return { total, byReason };
         }
 
         // Used for the normal round-details cell (excludes Team Work, which
@@ -4716,7 +4993,15 @@
                             const burnedHere = burnEntry && burnEntry.field === 'teamWorkAdj';
                             parts.push(`<span style="color: var(--accent-glow);">${burnedHere ? '🔥 ' : ''}🤝${twVal}${tag}</span>`);
                         }
-                        html += `<td>${parts.length ? parts.join(' + ') : '-'}</td>`;
+                        // One badge per cell showing this Round's T-PAIR total
+                        // for this player, regardless of which source(s) —
+                        // normal play, a won Challenge, Team Work — contributed
+                        // to it. Full reason-by-reason detail lives in the
+                        // Final Results T-PAIR panel, not here, so the cell
+                        // never has to grow.
+                        const tpCount = (gameMode !== 'quick') ? getRoundTPairCount(idx, r) : 0;
+                        const tpBadge = tpCount > 0 ? `<span class="rbr-tpair-badge">♠${tpCount}</span>` : '';
+                        html += `<td>${parts.length ? parts.join(' + ') : '-'}${tpBadge}</td>`;
                     });
                     html += '</tr>';
                 } else {
@@ -5095,7 +5380,26 @@
                 }
             });
             recalculateTotals();
-            teamWorkLog.push({ round: triggerRound, leaderIdx: twLeaderIdx, total, playedIdxs, assignedRounds });
+
+            // Capture T-PAIR reasons BEFORE clearDraft() wipes them — Team Work
+            // Round shares the same scoring engine, so Wild 15 / Perfect Turn /
+            // Long Word / Joinz can still fire during it, same as a normal
+            // Turn. Completing the Team Work Round is itself always one of the
+            // T-PAIR triggers, so it's always included too. These are shared
+            // by the whole team, so no single name goes on the live alert —
+            // but for the per-player T-PAIR stats, every player who actually
+            // received a share this Round (Leader, Active, or Passive — i.e.
+            // everyone in `shares` below) is individually credited with the
+            // full list, since it's genuinely their T-PAIR too.
+            const twTPairReasons = (gameMode !== 'quick')
+                ? [{ key: 'Team Work Round', label: 'Team Work Round', count: 1 }, ...turnTPairReasons]
+                : [];
+
+            // Stored on teamWorkLog (keyed by assignedRounds, same as the
+            // Leader-tag lookup in renderRoundDetailsTable) so the R-b-r ♠
+            // badge can find a player's TW-round T-PAIR count under the round
+            // their share actually landed in, not just the trigger round.
+            teamWorkLog.push({ round: triggerRound, leaderIdx: twLeaderIdx, total, playedIdxs, assignedRounds, tpairReasons: twTPairReasons });
             // Logged against the trigger round only. Which round each player's
             // share technically got *stored* in (assignedRounds) is an internal
             // bookkeeping detail with no strategic meaning, so it stays out of
@@ -5108,18 +5412,11 @@
                 shares: players.reduce((acc, p, idx) => {
                     acc[idx] = p.teamWorkAdj[assignedRounds[idx]] || 0;
                     return acc;
-                }, {})
+                }, {}),
+                tpairReasons: twTPairReasons
             });
             lastSettledPlayerIdx = twLeaderIdx;
             lastSettledRound = assignedRounds[twLeaderIdx];
-
-            // Capture T-PAIR reasons BEFORE clearDraft() wipes them — Team Work
-            // Round shares the same scoring engine, so Wild 15 / Perfect Turn /
-            // Long Word / Intersections can still fire during it, same as a
-            // normal Turn. Completing the Team Work Round is itself always one
-            // of the T-PAIR triggers, so it's always included too. These are
-            // shared by the whole team, so no names.
-            const twTPairReasons = [`Team Work Round`, ...turnTPairReasons];
 
             clearDraft();
             moveCalcEngine('game-calc-mount');
@@ -5139,7 +5436,9 @@
 
             // The purple T-PAIR alert stays reason-only (no score breakdown),
             // matching the normal-Turn alert's format exactly.
-            showTPairAlert(twTPairReasons.join(', '), twTPairReasons.length);
+            if (gameMode !== 'quick') {
+                showTPairAlert(buildTPairReasonHTML(twTPairReasons), totalTPairCount(twTPairReasons));
+            }
             advanceAfterTeamWork();
         }
 
@@ -5411,10 +5710,47 @@
             }).join('');
 
             document.getElementById('results-stats').innerHTML = buildStatsFooter();
+            renderTPairStatsPanel();
             renderRoundDetailsTable('results-round-details-table');
             recordGameToHistory();
             document.getElementById('results-screen').style.display = 'flex';
             scrollToTop();
+        }
+
+        // Quick Mode has no T-PAIR mechanism at all, so the whole panel stays
+        // hidden there. Otherwise: whole-game total up top, then one row per
+        // player with their own total and a chip per reason they earned this
+        // game (each chip always shows "LabelXcount", matching the in-game
+        // toast format so the two never look inconsistent with each other).
+        function renderTPairStatsPanel() {
+            const panel = document.getElementById('results-tpair-panel');
+            if (gameMode === 'quick') {
+                panel.style.display = 'none';
+                return;
+            }
+            const perPlayer = players.map((p, idx) => getPlayerTPairSummary(idx));
+            const gameTotal = perPlayer.reduce((sum, s) => sum + s.total, 0);
+            if (gameTotal === 0) {
+                panel.style.display = 'none';
+                return;
+            }
+            panel.style.display = 'flex';
+            let html = `<div class="tpair-game-total">Total this game: <strong>${gameTotal}</strong> T-PAIR</div>`;
+            players.forEach((p, idx) => {
+                const summary = perPlayer[idx];
+                if (summary.total === 0) return;
+                const chips = Object.keys(summary.byReason).map(key =>
+                    `<span class="tpair-chip">${key}<span class="tpair-reason-count">X${summary.byReason[key]}</span></span>`
+                ).join('');
+                html += `<div class="tpair-player-row">
+                            <div class="tpair-player-header">
+                                <span class="tpair-player-name">${p.name}</span>
+                                <span class="tpair-player-count">${summary.total}</span>
+                            </div>
+                            <div class="tpair-chip-row">${chips}</div>
+                         </div>`;
+            });
+            document.getElementById('results-tpair-stats').innerHTML = html;
         }
 
         function formatDuration(ms) {
@@ -5658,6 +5994,7 @@
                         out.opponent = name(e.opponent);
                         out.result = e.result;
                         out.hcUsed = e.hcUsed;
+                        out.tpair = !!e.tpair;
                         break;
                     case 'burn':
                         out.target = name(e.target);
@@ -5679,6 +6016,7 @@
                             .filter(idx => idx !== e.leader && !(e.active || []).includes(idx))
                             .map(name);
                         out.shares = mapKeysToNames(e.shares);
+                        out.tpairReasons = e.tpairReasons;
                         break;
                     }
                     case 'settlement':
