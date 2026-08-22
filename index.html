@@ -481,8 +481,8 @@
         }
         /* Express: hides Bonus AND Team Work Round / Wager Session / Burn /
            Long Word T-PAIR — everything that isn't a direct score-affecting
-           action or (per the game owner's call) Card Exchange / Handicap /
-           Lookup / Challenge, which stay in all three styles.
+           action or (per the game owner's call) Card Exchange / Reverse /
+           Handicap / Challenge, which stay in all three styles.
            Lite: keeps Bonus + T-PAIR on top of Express's keep-list, but still
            hides Team Work Round / Wager Session / Burn.
            Full: shows everything. */
@@ -881,7 +881,9 @@
             letter-spacing: 0;
         }
         .rbr-tpair-badge {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
             background: #a855f7;
             color: #fff;
             font-size: 0.62rem;
@@ -1081,9 +1083,9 @@
             text-align: center;
             line-height: 1.3;
         }
-        /* .sa-active replaces the native `disabled` attribute for the 5
-           double-tap-to-undo special-action buttons (Lookup, Challenge,
-           Burn, Perfect Turn, Bonus). Native `disabled` blocks touch/click
+        /* .sa-active replaces the native `disabled` attribute for the
+           double-tap-to-undo special-action buttons (Challenge, Burn,
+           Perfect Turn, Bonus). Native `disabled` blocks touch/click
            events entirely in modern browsers, which silently broke the
            "double-tap the same button to undo" gesture below — the button
            LOOKED tappable-again but the browser was discarding every event
@@ -1106,15 +1108,6 @@
             display: block;
             font-weight: normal;
             opacity: 0.8;
-        }
-        .btn-lookup {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-        .btn-lookup:active:not(.sa-active) {
-            background-color: var(--danger);
-            color: white;
         }
         .challenge-check {
             background-color: rgba(16, 185, 129, 0.1);
@@ -1175,6 +1168,19 @@
         .btn-exchange:disabled {
             background-color: var(--disabled);
             opacity: 0.4;
+        }
+        .btn-reverse {
+            background-color: rgba(239, 68, 68, 0.14);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 6px;
+            padding: 7px 14px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-reverse:active {
+            background-color: rgba(239, 68, 68, 0.3);
         }
         /* Bonus section */
         .btn-mult {
@@ -1693,7 +1699,7 @@
     <div id="zero-turn-modal" class="modal-overlay" style="display:none;">
         <div class="modal-box">
             <div class="modal-title">Submit an Empty Turn?</div>
-            <div class="modal-sub">Nothing's been tapped this Turn — no Word, Lookup, or Bonus. If you meant to add a card score, go back and tap it, then +/−.</div>
+            <div class="modal-sub">Nothing's been tapped this Turn — no Word or Bonus. If you meant to add a card score, go back and tap it, then +/−.</div>
             <button class="btn btn-secondary" onclick="cancelZeroTurnSubmit()">Go Back</button>
             <button class="btn" onclick="confirmZeroTurnSubmit()">Submit 0 pts</button>
         </div>
@@ -1755,7 +1761,7 @@
     <button id="help-fab" onclick="showHelp()" title="Help">?</button>
     <header>
         <h1>CoJoinz</h1>
-        <div style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:-6px; letter-spacing:1px;">v22</div>
+        <div style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:-6px; letter-spacing:1px;">v26</div>
     </header>
 
     <div class="container">
@@ -1771,7 +1777,15 @@
             <div class="panel-title" style="border:none; margin-bottom: 15px;">New Game Setup</div>
 
             <div class="form-group">
-                <label>Game Style</label>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="margin-bottom:0;">Game Style</label>
+                    <span style="font-size:0.75rem; color:var(--primary); cursor:pointer;" onclick="toggleGameStyleInfo()">ⓘ What's the difference?</span>
+                </div>
+                <div id="game-style-info" style="display:none; font-size:0.72rem; color:var(--text-muted); line-height:1.6; margin:6px 0 10px;">
+                    <strong>Express:</strong> Score only (without BONUS and ACTION Tokenz).<br>
+                    <strong>Lite:</strong> Score with BONUS Tokenz.<br>
+                    <strong>Full:</strong> Score with BONUS and ACTION Tokenz.
+                </div>
                 <div class="game-style-row">
                     <button id="style-btn-quick" class="btn btn-secondary" onclick="selectGameStyle('quick')"><span>⚡️</span> Express</button>
                     <button id="style-btn-lite" class="btn btn-secondary" onclick="selectGameStyle('lite')"><img class="game-style-icon" src="data:image/png;base64,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"> Lite</button>
@@ -1939,7 +1953,10 @@
                     <div class="turn-indicator-left">
                         <div class="active-light"></div>
                         <div>
-                            <div id="current-round-display" style="font-size: 0.8rem; color: var(--text-muted);">ROUND 1</div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div id="current-round-display" style="font-size: 0.8rem; color: var(--text-muted);">ROUND 1</div>
+                                <span id="direction-badge" style="display:none; font-size:0.62rem; font-weight:700; color:#fbbf24; background:rgba(251,191,36,0.14); padding:2px 7px; border-radius:999px;">Reversed</span>
+                            </div>
                             <div id="current-player-display" class="active-player-name">Player Name</div>
                         </div>
                     </div>
@@ -1959,21 +1976,22 @@
                 </div>
             </div>
 
-            <!-- 3. Card Exchange (first — using it forfeits this turn) -->
+            <!-- 3. Card Exchange (first — using it forfeits this turn) / Reverse -->
             <div class="panel">
                 <div class="exchange-panel">
                     <div>
                         <div style="font-weight: 700; font-size: 0.9rem;">Card Exchange</div>
                         <div style="font-size: 0.72rem; color: var(--text-muted);">Max. 3 cards / 1 per round / 3 per game</div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div id="exchange-dots-container" class="exchange-dots">
-                            <div class="exchange-dot"></div>
-                            <div class="exchange-dot"></div>
-                            <div class="exchange-dot"></div>
-                        </div>
-                        <button id="btn-exchange-action" class="btn-exchange" onclick="useExchange()">Use</button>
+                    <div id="exchange-dots-container" class="exchange-dots">
+                        <div class="exchange-dot"></div>
+                        <div class="exchange-dot"></div>
+                        <div class="exchange-dot"></div>
                     </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
+                    <button id="btn-exchange-action" class="btn-exchange" onclick="useExchange()">Use Exchange</button>
+                    <button id="btn-reverse-action" class="btn-reverse" onclick="useReverse()">Reverse</button>
                 </div>
 
                 <!-- Handicap usage no longer shown here — already visible in the
@@ -1985,10 +2003,6 @@
                     <button class="btn btn-secondary btn-sm" style="background:rgba(59,130,246,0.16); border-color:rgba(59,130,246,0.5); color:#60a5fa;" onclick="enterTeamWork()">🤝 Team Work Round</button>
                     <button class="btn btn-secondary btn-sm" style="background:rgba(59,130,246,0.16); border-color:rgba(59,130,246,0.5); color:#60a5fa;" onclick="enterWagerRound()"><span class="wager-icon"></span>&nbsp;Wager Session</button>
                 </div>
-
-                <div class="section-divider quick-hide"></div>
-
-                <button id="btn-lookup" class="btn-special btn-lookup" onclick="useLookup()">LOOKUP (-5)</button>
 
                 <div class="section-divider"><span>Challenge</span></div>
 
@@ -2162,8 +2176,13 @@
                 <button class="btn" style="margin-top:6px;" onclick="startNewGameFromResults()">New Game</button>
             </div>
             <div class="panel" id="results-tpair-panel" style="display:none;">
-                <div class="panel-title" id="results-tpair-title">T-PAIR Stats</div>
-                <div id="results-tpair-stats"></div>
+                <div class="panel-title">
+                    <span id="results-tpair-title">T-PAIR Stats</span>
+                    <span id="results-tpair-toggle" style="font-size:0.75rem; color:var(--primary); cursor:pointer;" onclick="toggleTPairStats()">▼ Show</span>
+                </div>
+                <div id="results-tpair-container" style="display:none;">
+                    <div id="results-tpair-stats"></div>
+                </div>
             </div>
             <div class="panel">
                 <div class="panel-title">
@@ -2262,23 +2281,23 @@
 
                 <div class="help-body">
                     <div class="help-section">
+                        <h3>Game Style (Express / Lite / Full)</h3>
+                        <p><strong>Express:</strong> Score only (without BONUS and ACTION Tokenz). <strong>Lite:</strong> Score with BONUS Tokenz. <strong>Full:</strong> Score with BONUS and ACTION Tokenz.</p>
+                    </div>
+
+                    <div class="help-section">
                         <h3>Scoring (Letter → Word → Turn)</h3>
                         <p>Tap Letter presets to build a Word into the Subtotal — each tap appears as its own tile below the number so you can always see exactly what you've tapped. Tap <strong>W</strong> for a Wild card (worth 0). Press − or + to commit that Word into "This Turn's Points". Repeat for each Word you play this turn. Nothing is final until you tap <strong>Submit Round Score</strong>.</p>
                     </div>
 
                     <div class="help-section">
                         <h3>Bonus (2X / 3X / TAX / FLAT)</h3>
-                        <p>After building your Words, pick a Bonus and where it applies: <strong>Card</strong> (choose a card, self-explanatory value), <strong>Word</strong> (auto-picks your highest word for a multiplier, or lowest word for TAX), or <strong>Turn</strong> (applies to the whole turn total so far). Multipliers add the extra copies; TAX subtracts that amount; <strong>FLAT</strong> just adds a flat amount unrelated to any Card/Word/Turn value. One Bonus per turn.</p>
+                        <p>After building your Words, pick a Bonus and where it applies: <strong>Card</strong> (choose a card, self-explanatory value), <strong>Word</strong> (auto-picks your highest word for a multiplier, or lowest word for TAX), or <strong>Turn</strong> (applies to the whole turn total so far). For 2X/3X only, <strong>Wild Word</strong> adds together every Word played this Turn that used a Wild card, then applies the multiplier to that total. Multipliers add the extra copies; TAX subtracts that amount; <strong>FLAT</strong> just adds a flat amount unrelated to any Card/Word/Turn value. One Bonus per turn.</p>
                     </div>
 
                     <div class="help-section">
                         <h3>Perfect Turn (+50)</h3>
                         <p>A flat bonus you can trigger once per turn, stacking on top of any 2X/3X/TAX/FLAT you also used. It also triggers <strong>automatically</strong> the moment a single Word is built from exactly 7 cards (the whole hand at once) — no need to press the button yourself in that case. Double-tap the greyed-out button to undo either way.</p>
-                    </div>
-
-                    <div class="help-section">
-                        <h3>Lookup (−5)</h3>
-                        <p>A quick penalty for the current turn. Once per turn — double-tap the greyed-out button to undo it before you submit.</p>
                     </div>
 
                     <div class="help-section">
@@ -2289,6 +2308,11 @@
                     <div class="help-section">
                         <h3>Card Exchange</h3>
                         <p>Max. 3 cards / 1 per round / 3 per game. Using it scores 0 for your turn and skips straight to the next player. A brief pop-up lets you undo it right after. Any Challenge points earned this round are kept separately and aren't affected.</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>Reverse</h3>
+                        <p>Scores 0 for your turn (same as Card Exchange) and flips the turn order — the next player is whoever was "before" you instead of "after" you. Stays reversed until someone plays Reverse again. A "Reversed" tag appears next to the Round number whenever it's active, and a pop-up lets you undo Reverse right after playing it. No limit on how many times it can be used.</p>
                     </div>
 
                     <div class="help-section">
@@ -2307,7 +2331,7 @@
                     </div>
 
                     <div class="help-section">
-                        <h3>♠ T-PAIR Alert</h3>
+                        <h3><svg viewBox="0 0 512 512" style="width:1.2em;height:1.2em;vertical-align:-0.25em;" aria-hidden="true"><defs><linearGradient id="tpairIconPurple" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#B65CFF"/><stop offset="100%" stop-color="#8E3CFF"/></linearGradient><linearGradient id="tpairIconCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#35205F"/><stop offset="100%" stop-color="#261743"/></linearGradient></defs><g transform="rotate(-9 220 250)"><rect x="145" y="115" width="180" height="270" rx="28" fill="url(#tpairIconCard)" stroke="url(#tpairIconPurple)" stroke-width="8"/></g><g transform="rotate(8 300 285)"><rect x="225" y="145" width="180" height="270" rx="28" fill="url(#tpairIconCard)" stroke="url(#tpairIconPurple)" stroke-width="8"/></g></svg> T-PAIR Alert</h3>
                         <p>A distinct purple alert (separate from normal toasts) that reminds the scorekeeper a T-PAIR reward applies. Fires automatically for: a Challenge being decided, a Perfect Turn (manual or auto), a Long Word (auto-detected from the Score → Letter Count mapping in Setup), every Word from the 3rd onward committed in a single Turn (Joinz — 3 Words = 1 credit, 4 Words = 2 more, 5 Words = 3 more, and so on; within one Turn these merge into a single "JoinzN x_count_" entry labelled by whichever Word count the Turn ended on), a Word scored ≥15 using a Wild card (Wild 15), and a completed Team Work Round. Each reason shows as "Label xcount" (e.g. "Joinz4 x2"), always including the count even at 1. The T-PAIR Stats panel on the Final Results screen totals everything up per player at the end of the game, with Joinz broken down by which Word count each Turn ended on (e.g. "Joinz3 x1, Joinz4 x4").</p>
                     </div>
 
@@ -2376,6 +2400,11 @@
         let players = [];
         let activePlayerIndex = 0;
         let currentRound = 1;
+        // 1 = normal (clockwise) seat order, -1 = reversed. Flipped by
+        // useReverse(); persists until reversed again. nextTurn()/prevTurn()
+        // both read this instead of a hardcoded +1/-1 so "Fix a mis-tap"
+        // (prevTurn) always undoes whatever direction was actually taken.
+        let turnDirection = 1;
         let draftScore = 0;
         let draftHistory = []; // { value, label }
         let draftWords = [];   // numbers only, this turn's confirmed Words
@@ -2397,8 +2426,7 @@
         let challengeBIdx = 1;
         let appliedChallenge = null; // { aIdx, bIdx, winner, round }
 
-        let specialActionsState = { lookup: false, challenge: false, bonus: false, perfectTurn: false, burn: false };
-        let lookupEntry = null;
+        let specialActionsState = { challenge: false, bonus: false, perfectTurn: false, burn: false };
         let bonusEntry = null;
         let perfectTurnEntry = null;
         let bonusPendingOp = null; // '2x' | '3x' | 'tax' while choosing a layer
@@ -2687,7 +2715,7 @@
         // ---------- Auto-save (simple: doesn't account for real elapsed offline time) ----------
         function collectState() {
             return {
-                players, activePlayerIndex, currentRound,
+                players, activePlayerIndex, currentRound, turnDirection,
                 challengeAIdx, challengeBIdx,
                 timeLimitMinutes, remainingSeconds, isManuallyPaused,
                 turnTimerSeconds,
@@ -2727,6 +2755,7 @@
             players = state.players;
             activePlayerIndex = state.activePlayerIndex;
             currentRound = state.currentRound;
+            turnDirection = (state.turnDirection === -1) ? -1 : 1;
             challengeAIdx = state.challengeAIdx;
             challengeBIdx = state.challengeBIdx;
             timeLimitMinutes = state.timeLimitMinutes;
@@ -2803,6 +2832,15 @@
             ['quick', 'lite', 'full'].forEach(m => {
                 document.getElementById(`style-btn-${m}`).classList.toggle('active', m === mode);
             });
+        }
+
+        // Tap-to-reveal explainer for Express/Lite/Full — kept collapsed by
+        // default so the Setup screen doesn't stay cluttered with always-on
+        // text; same interaction pattern as the "✎ Manage" toggles elsewhere
+        // on this screen.
+        function toggleGameStyleInfo() {
+            const box = document.getElementById('game-style-info');
+            box.style.display = box.style.display === 'none' ? 'block' : 'none';
         }
 
         function selectPlayerCount(count) {
@@ -3048,6 +3086,7 @@
             }
             activePlayerIndex = 0;
             currentRound = 1;
+            turnDirection = 1;
             challengeAIdx = 0;
             challengeBIdx = findDifferentIndex(0);
             appliedChallenge = null;
@@ -4004,10 +4043,8 @@
             draftHistory = [];
             draftWords = [];
             editingRoundIndex = null;
-            specialActionsState.lookup = false;
             specialActionsState.bonus = false;
             specialActionsState.perfectTurn = false;
-            lookupEntry = null;
             bonusEntry = null;
             perfectTurnEntry = null;
             perfectTurnReasonText = null;
@@ -4048,28 +4085,9 @@
         }
 
         function resetRoundSpecialActions() {
-            specialActionsState = { lookup: false, challenge: false, bonus: false, perfectTurn: false, burn: false };
+            specialActionsState = { challenge: false, bonus: false, perfectTurn: false, burn: false };
             appliedChallenge = null;
             appliedBurn = null;
-        }
-
-        // ---------- Lookup ----------
-        function useLookup() {
-            if (specialActionsState.lookup) return;
-            lookupEntry = addValue(-5, '-5 (Lookup)');
-            specialActionsState.lookup = true;
-            updateSpecialButtonsUI();
-        }
-
-        function undoLookup() {
-            if (!specialActionsState.lookup || !lookupEntry) return;
-            draftScore -= lookupEntry.value;
-            const idx = draftHistory.indexOf(lookupEntry);
-            if (idx > -1) draftHistory.splice(idx, 1);
-            lookupEntry = null;
-            specialActionsState.lookup = false;
-            updateSpecialButtonsUI();
-            updateDraftDisplay();
         }
 
         // ---------- Perfect Turn ----------
@@ -4145,6 +4163,11 @@
         }
 
         // TAX gets a 4th layer option (Fixed Number) on top of Letter/Word/Turn.
+        // 2X/3X get a different 4th layer option instead: Wild Word — sums
+        // every Word committed this Turn that used at least one Wild card
+        // (see chooseBonusLayer's 'wildword' branch). TAX doesn't get this
+        // option since Wild cards are always worth 0 and would make TAX's
+        // "lowest word" logic meaningless here.
         function renderBonusLayerRow(op) {
             const row = document.getElementById('bonus-layer-row');
             let html = `
@@ -4153,6 +4176,8 @@
                 <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="chooseBonusLayer('turn')">Turn</button>`;
             if (op === 'tax') {
                 html += `<button class="btn btn-secondary btn-sm" style="flex:1;" onclick="chooseBonusLayer('fixed')">Fixed #</button>`;
+            } else {
+                html += `<button class="btn btn-secondary btn-sm" style="flex:1;" onclick="chooseBonusLayer('wildword')">Wild Word</button>`;
             }
             row.innerHTML = html;
         }
@@ -4181,6 +4206,22 @@
                 }
                 const target = bonusPendingOp === 'tax' ? Math.min(...draftWords) : Math.max(...draftWords);
                 applyBonus(bonusPendingOp, 'Word', target);
+                return;
+            }
+            if (layer === 'wildword') {
+                // 2X/3X only (see renderBonusLayerRow). Unlike the single-Word
+                // layer above, this SUMS every Word committed this Turn that
+                // used at least one Wild card — draftWordDetails already
+                // tracks per-card wild flags, so no extra tracking needed.
+                const wildWordValues = draftWordDetails
+                    .filter(w => w.cards.some(c => c.wild))
+                    .map(w => w.value);
+                if (wildWordValues.length === 0) {
+                    alert('No Words with a Wild card recorded yet this turn — build one first.');
+                    return;
+                }
+                const target = wildWordValues.reduce((sum, v) => sum + v, 0);
+                applyBonus(bonusPendingOp, 'Wild Word', target);
                 return;
             }
             if (layer === 'fixed') {
@@ -4531,7 +4572,6 @@
         }
 
         function updateSpecialButtonsUI() {
-            const lookupBtn = document.getElementById('btn-lookup');
             const aBtn = document.getElementById('btn-challenge-a');
             const bBtn = document.getElementById('btn-challenge-b');
             const burnBtn = document.getElementById('btn-burn');
@@ -4542,7 +4582,6 @@
             const bonusFixed = document.getElementById('btn-bonus-fixed');
             const bonusStack = document.getElementById('btn-bonus-stack');
 
-            configureSpecialButton(lookupBtn, () => specialActionsState.lookup, undoLookup);
             configureSpecialButton(aBtn, () => specialActionsState.challenge, undoChallenge);
             configureSpecialButton(bBtn, () => specialActionsState.challenge, undoChallenge);
             configureSpecialButton(burnBtn, () => specialActionsState.burn, undoBurn);
@@ -4591,23 +4630,19 @@
                 p.exchangesUsed++;
                 p.lastExchangeRound = currentRound;
                 // Exchanging discards any Words/Bonus built up this Turn (they
-                // no longer count — there's nothing left to play), but keeps
-                // Lookup's -5 if it was used: that's a cost already paid,
-                // independent of whether the Word it was used for ends up
-                // getting played. Challenge points already applied to this
-                // round live in a separate field and are untouched either way.
-                const usedLookup = !!lookupEntry;
-                const lookupValue = usedLookup ? lookupEntry.value : 0;
-                p.turnScore[roundIdx] = lookupValue;
+                // no longer count — there's nothing left to play) and always
+                // scores 0. Challenge points already applied to this round
+                // live in a separate field and are untouched either way.
+                p.turnScore[roundIdx] = 0;
                 recalculateTotals();
                 lastSettledPlayerIdx = playerIdx;
                 lastSettledRound = roundIdx;
                 clearDraft();
                 // Exchanging IS this player's whole Turn (no Words played), so
                 // it's logged as a Turn with the exchange flag instead of a
-                // separate event type — still carrying Lookup if it was used.
-                gameEventLog.push({ r: roundIdx, p: playerIdx, t: 'turn', exchange: true, lookup: usedLookup, total: lookupValue });
-                showToast(lookupValue === 0 ? 'Exchanged → 0 pts' : `Exchanged → ${lookupValue} pts (Lookup kept)`, () => {
+                // separate event type.
+                gameEventLog.push({ r: roundIdx, p: playerIdx, t: 'turn', exchange: true, total: 0 });
+                showToast('Exchanged → 0 pts', () => {
                     const pl = players[playerIdx];
                     pl.exchangesUsed = Math.max(0, pl.exchangesUsed - 1);
                     if (pl.lastExchangeRound === roundIdx + 1) pl.lastExchangeRound = null;
@@ -4619,6 +4654,36 @@
                 });
                 nextTurn();
             }
+        }
+
+        // ---------- Reverse (flips turn direction, forfeits this Turn) ----------
+        // Same "commit immediately, offer undo via toast" pattern as Exchange
+        // above — REVERSE means this player doesn't play their Turn at all, so
+        // it isn't a pending in-turn toggle like Bonus/Perfect Turn/Burn. No
+        // once-per-round/game limit (unlike Exchange) since REVERSE is gated by
+        // physically holding the card, not a digital allowance.
+        function useReverse() {
+            const playerIdx = activePlayerIndex;
+            const roundIdx = currentRound - 1;
+            const prevDirection = turnDirection;
+            players[playerIdx].turnScore[roundIdx] = 0;
+            recalculateTotals();
+            lastSettledPlayerIdx = playerIdx;
+            lastSettledRound = roundIdx;
+            clearDraft();
+            turnDirection *= -1;
+            gameEventLog.push({ r: roundIdx, p: playerIdx, t: 'turn', reverse: true, total: 0 });
+            showToast('Reversed → 0 pts', () => {
+                players[playerIdx].turnScore[roundIdx] = undefined;
+                turnDirection = prevDirection;
+                const li = gameEventLog.findIndex(e => e.t === 'turn' && e.reverse && e.r === roundIdx && e.p === playerIdx);
+                if (li > -1) gameEventLog.splice(li, 1);
+                recalculateTotals();
+                updateUI();
+            });
+            // nextTurn() reads the just-flipped turnDirection, so it correctly
+            // advances to the seat "before" playerIdx in the old direction.
+            nextTurn();
         }
 
         // Handicap is now only consumed via the Challenge panel's HC checkbox
@@ -4668,7 +4733,6 @@
                 p: activePlayerIndex,
                 t: 'turn',
                 words: draftWordDetails,
-                lookup: specialActionsState.lookup,
                 bonus: draftBonusInfo,
                 perfectTurn: specialActionsState.perfectTurn,
                 tpairReasons: [...turnTPairReasons],
@@ -4756,7 +4820,11 @@
             });
             teamWorkLog.forEach(t => {
                 if (t.assignedRounds && t.assignedRounds[playerIdx] === round) {
-                    total += totalTPairCount(t.tpairReasons || []);
+                    // "Team Work Round" itself is shared by everyone who got a
+                    // share; the other triggers (Wild 15 / Long Word / Joinz /
+                    // Perfect Turn) only credit the Leader — see confirmTeamWork.
+                    total += totalTPairCount(t.sharedTpairReasons || []);
+                    if (playerIdx === t.leaderIdx) total += totalTPairCount(t.leaderOnlyTpairReasons || []);
                 }
             });
             return total;
@@ -4796,7 +4864,10 @@
             });
             teamWorkLog.forEach(t => {
                 if (t.assignedRounds && t.assignedRounds[playerIdx] !== undefined) {
-                    tally(t.tpairReasons);
+                    // Same split as getRoundTPairCount: "Team Work Round" goes
+                    // to everyone, the rest only to the Leader.
+                    tally(t.sharedTpairReasons);
+                    if (playerIdx === t.leaderIdx) tally(t.leaderOnlyTpairReasons);
                 }
             });
             return { total, byReason };
@@ -4841,11 +4912,33 @@
         }
 
         function nextTurn() {
-            activePlayerIndex++;
+            activePlayerIndex += turnDirection;
             if (activePlayerIndex >= players.length) {
                 activePlayerIndex = 0;
                 currentRound++;
                 checkRoundLimitWarning();
+            } else if (activePlayerIndex < 0) {
+                // Only reachable when turnDirection is -1 — wrapping past the
+                // first seat completes a lap just the same as wrapping past
+                // the last seat does going forward, so Round still advances;
+                // the new lap just starts from the last seat instead of seat 0.
+                activePlayerIndex = players.length - 1;
+                currentRound++;
+                checkRoundLimitWarning();
+            }
+            // Collision check: only reachable via a mid-Round Reverse. If the
+            // step above (no wrap — just a plain seat move) lands on a player
+            // who already has a score THIS Round, that collision itself means
+            // the Round is over: whoever hasn't gone yet this Round (there may
+            // be one or more, depending on where in the Round Reverse was
+            // played) is skipped entirely, and the seat we landed on carries
+            // straight into the next Round instead. Guarded by players.length
+            // so a pathological state can't loop forever.
+            let guard = 0;
+            while (players[activePlayerIndex].turnScore[currentRound - 1] !== undefined && guard < players.length) {
+                currentRound++;
+                checkRoundLimitWarning();
+                guard++;
             }
             challengeAIdx = activePlayerIndex;
             challengeBIdx = findDifferentIndex(activePlayerIndex);
@@ -4858,15 +4951,24 @@
 
         // Go back to fix a mis-tap. Pre-fills the draft with whatever is
         // currently recorded for that player+round (see loadDraftForEditing) —
-        // Submit will overwrite it rather than add on top.
+        // Submit will overwrite it rather than add on top. Always undoes
+        // whatever step nextTurn() actually took, so it mirrors turnDirection
+        // (moves opposite to it) rather than assuming forward seat order.
         function prevTurn() {
-            activePlayerIndex--;
+            activePlayerIndex -= turnDirection;
             if (activePlayerIndex < 0) {
                 if (currentRound > 1) {
                     currentRound--;
                     activePlayerIndex = players.length - 1;
                 } else {
                     activePlayerIndex = 0;
+                }
+            } else if (activePlayerIndex >= players.length) {
+                if (currentRound > 1) {
+                    currentRound--;
+                    activePlayerIndex = 0;
+                } else {
+                    activePlayerIndex = players.length - 1;
                 }
             }
             challengeAIdx = activePlayerIndex;
@@ -4897,6 +4999,7 @@
             document.getElementById('current-player-display').textContent = curPlayer.name;
             document.getElementById('current-round-display').textContent = `ROUND ${currentRound}`;
             document.getElementById('sticky-name-text').textContent = `Round ${currentRound} · ${curPlayer.name}`;
+            document.getElementById('direction-badge').style.display = turnDirection === -1 ? 'inline-block' : 'none';
 
             updateTurnTimerUI();
             updateTurnTimerDisplay();
@@ -4913,7 +5016,7 @@
                 exchangeBtn.textContent = 'Used Up';
             } else {
                 exchangeBtn.disabled = false;
-                exchangeBtn.textContent = 'Use';
+                exchangeBtn.textContent = 'Use Exchange';
             }
 
             // Handicap usage is shown in the expanded Total Scores view instead
@@ -5055,7 +5158,7 @@
                         // Final Results T-PAIR panel, not here, so the cell
                         // never has to grow.
                         const tpCount = (gameMode !== 'quick') ? getRoundTPairCount(idx, r) : 0;
-                        const tpBadge = tpCount > 0 ? `<span class="rbr-tpair-badge">♠${tpCount}</span>` : '';
+                        const tpBadge = tpCount > 0 ? `<span class="rbr-tpair-badge">${tpairIconSVG(1.6)}${tpCount}</span>` : '';
                         html += `<td>${parts.length ? parts.join(' + ') : '-'}${tpBadge}</td>`;
                     });
                     html += '</tr>';
@@ -5440,21 +5543,31 @@
             // Round shares the same scoring engine, so Wild 15 / Perfect Turn /
             // Long Word / Joinz can still fire during it, same as a normal
             // Turn. Completing the Team Work Round is itself always one of the
-            // T-PAIR triggers, so it's always included too. These are shared
-            // by the whole team, so no single name goes on the live alert —
-            // but for the per-player T-PAIR stats, every player who actually
-            // received a share this Round (Leader, Active, or Passive — i.e.
-            // everyone in `shares` below) is individually credited with the
-            // full list, since it's genuinely their T-PAIR too.
-            const twTPairReasons = (gameMode !== 'quick')
-                ? [{ key: 'Team Work Round', label: 'Team Work Round', count: 1 }, ...turnTPairReasons]
+            // T-PAIR triggers, so it's always included too.
+            //
+            // Credit split: "Team Work Round" itself is genuinely shared, so
+            // every player who received a share this Round (Leader, Active,
+            // or Passive) is credited with it. The OTHER triggers (Wild 15 /
+            // Long Word / Joinz / Perfect Turn) came from the Leader's own
+            // word-building choices during the shared turn — same as a normal
+            // Turn, only the Leader who actually played is credited with
+            // those, not the whole team. The live alert still shows the full
+            // combined list either way, since everyone sees what happened.
+            const sharedTpairReasons = (gameMode !== 'quick')
+                ? [{ key: 'Team Work Round', label: 'Team Work Round', count: 1 }]
                 : [];
+            const leaderOnlyTpairReasons = (gameMode !== 'quick') ? [...turnTPairReasons] : [];
+            const twTPairReasons = [...sharedTpairReasons, ...leaderOnlyTpairReasons];
 
             // Stored on teamWorkLog (keyed by assignedRounds, same as the
             // Leader-tag lookup in renderRoundDetailsTable) so the R-b-r ♠
             // badge can find a player's TW-round T-PAIR count under the round
             // their share actually landed in, not just the trigger round.
-            teamWorkLog.push({ round: triggerRound, leaderIdx: twLeaderIdx, total, playedIdxs, assignedRounds, tpairReasons: twTPairReasons });
+            // sharedTpairReasons/leaderOnlyTpairReasons are read separately by
+            // getRoundTPairCount/getPlayerTPairSummary to apply the credit
+            // split above; tpairReasons (combined) is kept only for the
+            // gameEventLog export below.
+            teamWorkLog.push({ round: triggerRound, leaderIdx: twLeaderIdx, total, playedIdxs, assignedRounds, sharedTpairReasons, leaderOnlyTpairReasons });
             // Logged against the trigger round only. Which round each player's
             // share technically got *stored* in (assignedRounds) is an internal
             // bookkeeping detail with no strategic meaning, so it stays out of
@@ -5490,9 +5603,21 @@
             showToast(`🤝 Team Work Round: ${roundScoreSummary}`);
 
             // The purple T-PAIR alert stays reason-only (no score breakdown),
-            // matching the normal-Turn alert's format exactly.
+            // matching the normal-Turn alert's format exactly — but unlike a
+            // normal Turn, Team Work's credit is split (see confirmTeamWork's
+            // sharedTpairReasons/leaderOnlyTpairReasons above), so the alert
+            // text needs to say who actually gets which reason or it reads as
+            // if everyone got everything. Attribution is a PREFIX on each
+            // group's own line ("All: ...", "{Leader} only: ..."), one group
+            // per line (at most two: shared + leader-only) — the leading
+            // label scopes everything after it on that line unambiguously.
             if (gameMode !== 'quick') {
-                showTPairAlert(buildTPairReasonHTML(twTPairReasons), totalTPairCount(twTPairReasons));
+                const sharedText = sharedTpairReasons.length ? `All: ${buildTPairReasonHTML(sharedTpairReasons)}` : '';
+                const leaderText = leaderOnlyTpairReasons.length
+                    ? `${players[twLeaderIdx].name} only: ${buildTPairReasonHTML(leaderOnlyTpairReasons)}`
+                    : '';
+                const twReasonText = [sharedText, leaderText].filter(Boolean).join('<br>');
+                showTPairAlert(twReasonText, totalTPairCount(twTPairReasons));
             }
             advanceAfterTeamWork();
         }
@@ -6073,12 +6198,15 @@
                     case 'turn':
                         if (e.exchange) {
                             out.exchange = true;
-                            out.lookup = !!e.lookup;
+                            out.total = e.total || 0;
+                            break;
+                        }
+                        if (e.reverse) {
+                            out.reverse = true;
                             out.total = e.total || 0;
                             break;
                         }
                         out.words = e.words;
-                        out.lookup = e.lookup;
                         out.bonus = e.bonus;
                         out.perfectTurn = e.perfectTurn;
                         out.tpairReasons = e.tpairReasons;
@@ -6212,19 +6340,24 @@
 
             let recordsHtml = '';
             if (records.highestTurn || records.highestWord || records.highestTPairGame || records.highestTPairTurn) {
+                // Date-only (no time, no round number) per the record — the
+                // `date` field was already being stored on each record, this
+                // just displays it. Guarded in case an older saved record
+                // predates that field.
+                const fmtRecordDate = d => d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
                 recordsHtml += `<div style="padding:8px 10px; margin-bottom:10px; border-radius:8px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); font-size:0.82rem;">
                     <div style="font-weight:700; color:var(--gold); margin-bottom:4px;">🏅 All-Time Records (this device)</div>`;
                 if (records.highestTurn) {
-                    recordsHtml += `<div>⭐ Highest Single Turn: <strong>${records.highestTurn.value} pts</strong> — ${records.highestTurn.name}</div>`;
+                    recordsHtml += `<div>⭐ Highest Single Turn: <strong>${records.highestTurn.value} pts</strong> — ${records.highestTurn.name} <span style="color:var(--text-muted); font-size:0.85em;">(${fmtRecordDate(records.highestTurn.date)})</span></div>`;
                 }
                 if (records.highestWord) {
-                    recordsHtml += `<div>✍️ Highest Word: <strong>${records.highestWord.value} pts</strong> — ${records.highestWord.name}</div>`;
+                    recordsHtml += `<div>✍️ Highest Word: <strong>${records.highestWord.value} pts</strong> — ${records.highestWord.name} <span style="color:var(--text-muted); font-size:0.85em;">(${fmtRecordDate(records.highestWord.date)})</span></div>`;
                 }
                 if (records.highestTPairGame) {
-                    recordsHtml += `<div>${tpairIconSVG()} Most T-PAIRs (1 game): <strong>${records.highestTPairGame.value}</strong> — ${records.highestTPairGame.name}</div>`;
+                    recordsHtml += `<div>${tpairIconSVG()} Most T-PAIRs (1 game): <strong>${records.highestTPairGame.value}</strong> — ${records.highestTPairGame.name} <span style="color:var(--text-muted); font-size:0.85em;">(${fmtRecordDate(records.highestTPairGame.date)})</span></div>`;
                 }
                 if (records.highestTPairTurn) {
-                    recordsHtml += `<div>${tpairIconSVG()} Most T-PAIRs (1 turn): <strong>${records.highestTPairTurn.value}</strong> — ${records.highestTPairTurn.name}</div>`;
+                    recordsHtml += `<div>${tpairIconSVG()} Most T-PAIRs (1 turn): <strong>${records.highestTPairTurn.value}</strong> — ${records.highestTPairTurn.name} <span style="color:var(--text-muted); font-size:0.85em;">(${fmtRecordDate(records.highestTPairTurn.date)})</span></div>`;
                 }
                 recordsHtml += `</div>`;
             }
@@ -6286,6 +6419,14 @@
         function toggleResultsHistory() {
             const box = document.getElementById('results-history-container');
             const toggle = document.getElementById('results-history-toggle');
+            const isOpen = box.style.display === 'block';
+            box.style.display = isOpen ? 'none' : 'block';
+            toggle.textContent = isOpen ? '▼ Show' : '▲ Hide';
+        }
+
+        function toggleTPairStats() {
+            const box = document.getElementById('results-tpair-container');
+            const toggle = document.getElementById('results-tpair-toggle');
             const isOpen = box.style.display === 'block';
             box.style.display = isOpen ? 'none' : 'block';
             toggle.textContent = isOpen ? '▼ Show' : '▲ Hide';
