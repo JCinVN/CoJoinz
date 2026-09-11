@@ -20,22 +20,87 @@
       background-color: #121212;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      overflow-x: hidden;
+      padding: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
     }
 
-    .image-container {
-      position: relative;
+    /* 頂部 Logo 樣式 */
+    .logo-container {
       width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
+      max-width: 400px;
+      margin-bottom: 30px;
+      text-align: center;
     }
 
-    .main-image {
+    .logo-img {
       width: 100%;
       height: auto;
       display: block;
+      margin: 0 auto;
+    }
+
+    /* 卡片容器：電腦版橫向排列 */
+    .cards-container {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    /* 單張卡片點擊區域 */
+    .card-item {
+      display: block;
+      flex: 1;
+      max-width: 320px;
+      transition: transform 0.2s ease;
+      text-decoration: none;
+    }
+
+    .card-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 28px;
+    }
+
+    .card-item:hover {
+      transform: translateY(-6px);
+    }
+
+    .card-item:active {
+      transform: translateY(2px);
+    }
+
+    /* Coming Soon 卡片點擊樣式 */
+    .card-item.disabled {
+      cursor: not-allowed;
+    }
+    .card-item.disabled:hover {
+      transform: none;
+    }
+
+    /* 手機版 RWD：三個卡片由上到下垂直疊放 */
+    @media (max-width: 768px) {
+      .logo-container {
+        max-width: 280px;
+        margin-bottom: 20px;
+      }
+
+      .cards-container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .card-item {
+        width: 100%;
+        max-width: 320px;
+      }
     }
 
     /* 離線提示 Banner */
@@ -43,62 +108,53 @@
       display: none;
       position: fixed;
       top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
       background: #EF4444;
-      color: white;
+      color: #FFF;
       padding: 6px 16px;
       border-radius: 20px;
       font-size: 14px;
-      font-family: sans-serif;
       font-weight: bold;
       z-index: 999;
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
   </style>
-  
-  <!-- 自動更新 Image Map 座標的輕量套件 (確保手機拉伸圖片時熱區依然精準) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/image-map-resizer/1.0.10/js/imageMapResizer.min.js"></script>
 </head>
 <body>
 
-  <div id="offline-banner">⚠️ 目前為離線模式 (Offline Mode)</div>
+  <div id="offline-banner">⚠️ 目前為離線模式</div>
 
-  <div class="image-container">
-    <!-- 主圖檔 -->
-    <img src="bg.png" alt="CoJoinz Hub" class="main-image" usemap="#cojoinz-map">
+  <!-- 頂部 Logo 圖檔 -->
+  <div class="logo-container">
+    <img src="Main Page LoGo.jpg" alt="CoJoinz Logo" class="logo-img">
+  </div>
 
-    <!-- 圖片三個 Icon 按鈕點擊區域 (左/中/右) -->
-    <map name="cojoinz-map">
-      <!-- 左邊卡片：CoJoinz SCORZ -->
-      <area shape="rect" coords="30,280,330,860" href="https://jcinvn.github.io/CoJoinz-Scorz/" alt="CoJoinz Scorz">
-      
-      <!-- 中間卡片：CoJoinz WORDSCANZ -->
-      <area shape="rect" coords="345,280,645,860" href="https://jcinvn.github.io/CoJoinz-WordScanz/" alt="CoJoinz WordScanz">
-      
-      <!-- 右邊卡片：CoJoinz INFOZ (Coming Soon) -->
-      <area shape="rect" coords="660,280,960,860" href="javascript:void(0);" onclick="alert('Coming Soon!')" alt="Coming Soon">
-    </map>
+  <!-- 三張卡片容器 -->
+  <div class="cards-container">
+    <!-- 1. SCORZ (另開新分頁) -->
+    <a href="https://jcinvn.github.io/CoJoinz-Scorz/" target="_blank" rel="noopener noreferrer" class="card-item">
+      <img src="Main Page SCORZ.jpg" alt="CoJoinz SCORZ">
+    </a>
+
+    <!-- 2. WORDSCANZ (另開新分頁) -->
+    <a href="https://jcinvn.github.io/CoJoinz-WordScanz/" target="_blank" rel="noopener noreferrer" class="card-item">
+      <img src="Main Page WORDSCANZ.jpg" alt="CoJoinz WORDSCANZ">
+    </a>
+
+    <!-- 3. INFOZ (Coming Soon) -->
+    <a href="javascript:void(0);" onclick="alert('INFOZ is Coming Soon!')" class="card-item disabled">
+      <img src="Main Page INFOZ.jpg" alt="CoJoinz INFOZ Coming Soon">
+    </a>
   </div>
 
   <script>
-    // 初始化 Image Map 自動縮放
-    window.addEventListener('DOMContentLoaded', () => {
-      if (typeof imageMapResize === 'function') {
-        imageMapResize();
-      }
-    });
-
-    // 註冊 Service Worker 實現離線快取
+    // 註冊 PWA Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(() => console.log('PWA Service Worker 註冊成功'))
-          .catch(err => console.log('Service Worker 註冊失敗:', err));
+        navigator.serviceWorker.register('./sw.js');
       });
     }
 
-    // 網路連線狀態監控
+    // 離線狀態偵測
     function updateOnlineStatus() {
       const banner = document.getElementById('offline-banner');
       banner.style.display = navigator.onLine ? 'none' : 'block';

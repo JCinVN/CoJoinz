@@ -1,31 +1,27 @@
-const CACHE_NAME = 'cojoinz-img-hub-v1';
+const CACHE_NAME = 'cojoinz-hub-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './bg.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/image-map-resizer/1.0.10/js/imageMapResizer.min.js'
+  './Main Page LoGo.jpg',
+  './Main Page SCORZ.jpg',
+  './Main Page WORDSCANZ.jpg',
+  './Main Page INFOZ.jpg'
 ];
 
-// 頁面安裝時把圖片與網頁存入離線快取
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// 清除舊版本快取
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
+          if (key !== CACHE_NAME) return caches.delete(key);
         })
       );
     })
@@ -33,18 +29,10 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
-// 攔截請求：優先讀取離線快取
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(e.request).catch(() => {
-        if (e.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
+      return cachedResponse || fetch(e.request);
     })
   );
 });
