@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CoJoinz Hub</title>
 
   <!-- PWA Manifest & Theme Color -->
@@ -14,6 +14,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent; /* 移除手機點擊灰色陰影 */
     }
 
     body {
@@ -27,7 +28,7 @@
       font-family: system-ui, -apple-system, sans-serif;
     }
 
-    /* 頂部 Logo 樣式 */
+    /* 頂部 Logo 容器 */
     .logo-container {
       width: 100%;
       max-width: 400px;
@@ -42,7 +43,7 @@
       margin: 0 auto;
     }
 
-    /* 卡片容器：電腦版橫向排列 */
+    /* 卡片容器：電腦版橫排 */
     .cards-container {
       display: flex;
       flex-direction: row;
@@ -53,11 +54,12 @@
       width: 100%;
     }
 
-    /* 單張卡片點擊區域 */
+    /* 卡片可點擊區域 */
     .card-item {
       display: block;
       flex: 1;
       max-width: 320px;
+      cursor: pointer;
       transition: transform 0.2s ease;
       text-decoration: none;
     }
@@ -67,6 +69,7 @@
       height: auto;
       display: block;
       border-radius: 28px;
+      pointer-events: none; /* 防止手機長按選取圖片 */
     }
 
     .card-item:hover {
@@ -77,24 +80,17 @@
       transform: translateY(2px);
     }
 
-    /* Coming Soon 卡片點擊樣式 */
-    .card-item.disabled {
-      cursor: not-allowed;
-    }
-    .card-item.disabled:hover {
-      transform: none;
-    }
-
     /* 手機版 RWD：三個卡片由上到下垂直疊放 */
     @media (max-width: 768px) {
       .logo-container {
         max-width: 280px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
       }
 
       .cards-container {
         flex-direction: column;
         align-items: center;
+        gap: 24px;
       }
 
       .card-item {
@@ -125,32 +121,46 @@
 
   <!-- 頂部 Logo 圖檔 -->
   <div class="logo-container">
-    <img src="Main Page LoGo.jpg" alt="CoJoinz Logo" class="logo-img">
+    <img src="logo.jpg" alt="CoJoinz Logo" class="logo-img">
   </div>
 
   <!-- 三張卡片容器 -->
   <div class="cards-container">
-    <!-- 1. SCORZ (另開新分頁) -->
-    <a href="https://jcinvn.github.io/CoJoinz-Scorz/" target="_blank" rel="noopener noreferrer" class="card-item">
-      <img src="Main Page SCORZ.jpg" alt="CoJoinz SCORZ">
+    <!-- 1. SCORZ (保持原視窗，另開新頁面) -->
+    <a href="https://jcinvn.github.io/CoJoinz-Scorz/" target="_blank" rel="noopener" class="card-item" onclick="openNewTab(event, 'https://jcinvn.github.io/CoJoinz-Scorz/')">
+      <img src="scorz.jpg" alt="CoJoinz SCORZ">
     </a>
 
-    <!-- 2. WORDSCANZ (另開新分頁) -->
-    <a href="https://jcinvn.github.io/CoJoinz-WordScanz/" target="_blank" rel="noopener noreferrer" class="card-item">
-      <img src="Main Page WORDSCANZ.jpg" alt="CoJoinz WORDSCANZ">
+    <!-- 2. WORDSCANZ (保持原視窗，另開新頁面) -->
+    <a href="https://jcinvn.github.io/CoJoinz-WordScanz/" target="_blank" rel="noopener" class="card-item" onclick="openNewTab(event, 'https://jcinvn.github.io/CoJoinz-WordScanz/')">
+      <img src="wordscanz.jpg" alt="CoJoinz WORDSCANZ">
     </a>
 
-    <!-- 3. INFOZ (Coming Soon) -->
-    <a href="javascript:void(0);" onclick="alert('INFOZ is Coming Soon!')" class="card-item disabled">
-      <img src="Main Page INFOZ.jpg" alt="CoJoinz INFOZ Coming Soon">
+    <!-- 3. INFOZ (Coming Soon 提示) -->
+    <a href="javascript:void(0);" class="card-item" onclick="showComingSoon(event)">
+      <img src="infoz.jpg" alt="CoJoinz INFOZ">
     </a>
   </div>
 
   <script>
+    // 強制保持原視窗並另開新視窗/分頁
+    function openNewTab(event, url) {
+      event.preventDefault();
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    // 點擊 INFOZ 彈出 Coming Soon
+    function showComingSoon(event) {
+      event.preventDefault();
+      alert('Coming Soon!');
+    }
+
     // 註冊 PWA Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js');
+        navigator.serviceWorker.register('./sw.js')
+          .then(() => console.log('SW 註冊成功'))
+          .catch(err => console.log('SW 註冊失敗:', err));
       });
     }
 

@@ -1,12 +1,12 @@
-const CACHE_NAME = 'cojoinz-hub-v3';
+const CACHE_NAME = 'cojoinz-hub-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './Main Page LoGo.jpg',
-  './Main Page SCORZ.jpg',
-  './Main Page WORDSCANZ.jpg',
-  './Main Page INFOZ.jpg'
+  './logo.jpg',
+  './scorz.jpg',
+  './wordscanz.jpg',
+  './infoz.jpg'
 ];
 
 self.addEventListener('install', (e) => {
