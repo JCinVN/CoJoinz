@@ -7,9 +7,9 @@
   "theme_color": "#121212",
   "icons": [
     {
-      "src": "wordscanz.jpg",
+      "src": "wordscanz.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ]
 }
