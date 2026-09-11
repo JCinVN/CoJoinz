@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoJoinz Hub</title>
+
+  <!-- PWA Manifest & Theme Color -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#121212">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #121212;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    .image-container {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .main-image {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* 離線提示 Banner */
+    #offline-banner {
+      display: none;
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #EF4444;
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-family: sans-serif;
+      font-weight: bold;
+      z-index: 999;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+  </style>
+  
+  <!-- 自動更新 Image Map 座標的輕量套件 (確保手機拉伸圖片時熱區依然精準) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/image-map-resizer/1.0.10/js/imageMapResizer.min.js"></script>
+</head>
+<body>
+
+  <div id="offline-banner">⚠️ 目前為離線模式 (Offline Mode)</div>
+
+  <div class="image-container">
+    <!-- 主圖檔 -->
+    <img src="bg.png" alt="CoJoinz Hub" class="main-image" usemap="#cojoinz-map">
+
+    <!-- 圖片三個 Icon 按鈕點擊區域 (左/中/右) -->
+    <map name="cojoinz-map">
+      <!-- 左邊卡片：CoJoinz SCORZ -->
+      <area shape="rect" coords="30,280,330,860" href="https://jcinvn.github.io/CoJoinz-Scorz/" alt="CoJoinz Scorz">
+      
+      <!-- 中間卡片：CoJoinz WORDSCANZ -->
+      <area shape="rect" coords="345,280,645,860" href="https://jcinvn.github.io/CoJoinz-WordScanz/" alt="CoJoinz WordScanz">
+      
+      <!-- 右邊卡片：CoJoinz INFOZ (Coming Soon) -->
+      <area shape="rect" coords="660,280,960,860" href="javascript:void(0);" onclick="alert('Coming Soon!')" alt="Coming Soon">
+    </map>
+  </div>
+
+  <script>
+    // 初始化 Image Map 自動縮放
+    window.addEventListener('DOMContentLoaded', () => {
+      if (typeof imageMapResize === 'function') {
+        imageMapResize();
+      }
+    });
+
+    // 註冊 Service Worker 實現離線快取
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(() => console.log('PWA Service Worker 註冊成功'))
+          .catch(err => console.log('Service Worker 註冊失敗:', err));
+      });
+    }
+
+    // 網路連線狀態監控
+    function updateOnlineStatus() {
+      const banner = document.getElementById('offline-banner');
+      banner.style.display = navigator.onLine ? 'none' : 'block';
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+  </script>
+</body>
+</html>
