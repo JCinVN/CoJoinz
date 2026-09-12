@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CoJoinz Hub</title>
+  <title>CoJoinz</title>
+
+  <!-- 強制瀏覽器不快取 HTML 頁面 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <!-- Favicon 設定 -->
+  <link rel="icon" type="image/jpeg" href="favicon.jpg?v=202609">
+  <link rel="apple-touch-icon" href="favicon.jpg?v=202609">
 
   <!-- PWA Manifest & Theme Color -->
   <link rel="manifest" href="manifest.json">
@@ -78,7 +87,7 @@
       transform: translateY(2px);
     }
 
-    /* 手機版 RWD：垂直疊放 */
+    /* 手機版 RWD：三個卡片由上到下垂直疊放 */
     @media (max-width: 768px) {
       .logo-container {
         max-width: 280px;
@@ -119,34 +128,41 @@
 
   <!-- 頂部 Logo -->
   <div class="logo-container">
-    <img src="logo.png" alt="CoJoinz Logo" class="logo-img">
+    <img src="logo.png?v=202609" alt="CoJoinz Logo" class="logo-img">
   </div>
 
   <!-- 卡片區域 -->
   <div class="cards-container">
     <!-- 1. SCORZ (開啟新分頁) -->
     <a href="https://jcinvn.github.io/CoJoinz-Scorz/" target="_blank" rel="noopener noreferrer" class="card-item">
-      <img src="scorz.png" alt="CoJoinz SCORZ">
+      <img src="scorz.png?v=202609" alt="CoJoinz SCORZ">
     </a>
 
     <!-- 2. WORDSCANZ (開啟新分頁) -->
     <a href="https://jcinvn.github.io/CoJoinz-WordScanz/" target="_blank" rel="noopener noreferrer" class="card-item">
-      <img src="wordscanz.png" alt="CoJoinz WORDSCANZ">
+      <img src="wordscanz.png?v=202609" alt="CoJoinz WORDSCANZ">
     </a>
 
     <!-- 3. INFOZ (Coming Soon) -->
     <a href="javascript:void(0);" onclick="alert('INFOZ is Coming Soon!')" class="card-item">
-      <img src="infoz.png" alt="CoJoinz INFOZ">
+      <img src="infoz.png?v=202609" alt="CoJoinz INFOZ">
     </a>
   </div>
 
   <script>
-    // 註冊 Service Worker
+    // 自動登出並清除死鎖的舊 Service Worker 快取的機制
     if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) {
+          registration.unregister(); // 強制取消舊 SW 註冊
+        }
+      });
+
+      // 重新以無快取參數註冊
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(() => console.log('SW Registered'))
-          .catch(err => console.log('SW Register Failed:', err));
+        navigator.serviceWorker.register('./sw.js?v=' + Date.now())
+          .then(() => console.log('SW Cleaned & Reloaded'))
+          .catch(err => console.log('SW Fail:', err));
       });
     }
 
